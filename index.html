@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamara Couto | Corretora de Imóveis</title>
+    <meta name="description" content="Ajudando famílias a encontrar o lar ideal com transparência, empatia e comprometimento.">
+    <link rel="stylesheet" href="style.css">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <div class="logo-container">
+                    <img src="assets/logo_final.png" alt="Logo" class="logo-img">
+                </div>
+                <span class="brand-text">Tamara Couto</span>
+            </div>
+            <div class="nav-links">
+                <a href="#imoveis">Imóveis</a>
+                <a href="#sobre">Sobre Mim</a>
+                <a href="https://www.instagram.com/tamaracoutocorretoradeimoveis/" target="_blank" class="icon-link" aria-label="Instagram">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                </a>
+                <a href="https://wa.me/5567999997768?text=Olá%20Tamara,%20vim%20pelo%20site%20e%20gostaria%20de%20conversar" target="_blank" class="icon-link whatsapp-link" aria-label="WhatsApp">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero split">
+        <div class="hero-content">
+            <p class="kicker fade-in">Exclusividade em Campo Grande</p>
+            <h1 class="fade-in delay-1">O alto padrão que a sua família merece.</h1>
+            <p class="hero-desc fade-in delay-2">Não perca tempo visitando imóveis que não combinam com a sua rotina. Com mais de uma década de autoridade e um olhar clínico de mãe, filtro as residências mais exclusivas da cidade para entregar o cenário perfeito para a sua família.</p>
+            <div class="hero-actions fade-in delay-3">
+                <a href="https://wa.me/5567999997768?text=Olá%20Tamara,%20gostaria%20de%20falar%20sobre%20imóveis%20de%20alto%20padrão" class="btn-primary large">Entrar em Contato</a>
+            </div>
+        </div>
+        <div class="hero-image-col reveal">
+            <img src="assets/images/WhatsApp Image 2026-07-20 at 3.32.08 PM.jpeg" alt="Tamara Couto">
+        </div>
+    </header>
+
+    <!-- Properties Section -->
+    <section id="imoveis" class="properties-section">
+        <div class="section-header">
+            <h2>Acervo de Alto Padrão</h2>
+            <p>Curadoria rigorosa das melhores propriedades de Campo Grande e região.</p>
+        </div>
+        
+        <div class="filters-container reveal">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Pesquisar por bairro, cidade ou tipo...">
+            </div>
+            <div class="category-filters" id="categoryFilters">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="Casa">Casas</button>
+                <button class="filter-btn" data-filter="Apartamento">Apartamentos</button>
+                <button class="filter-btn" data-filter="Cobertura">Coberturas</button>
+                <button class="filter-btn" data-filter="Terreno">Terrenos</button>
+            </div>
+        </div>
+        
+        <div class="properties-grid" id="propertiesGrid">
+            <!-- Property 1 -->
+            <div class="property-card reveal">
+                <div class="card-img">
+                    <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Imóvel 1">
+                    <span class="badge">Venda</span>
+                </div>
+                <div class="card-body">
+                    <h3>Casa de Alto Padrão - Condomínio</h3>
+                    <p class="price">R$ 2.450.000</p>
+                    <div class="features">
+                        <span>4 Quartos</span> • <span>4 Suítes</span> • <span>350m²</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property 2 -->
+            <div class="property-card reveal">
+                <div class="card-img">
+                    <img src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Imóvel 2">
+                    <span class="badge">Venda</span>
+                </div>
+                <div class="card-body">
+                    <h3>Apartamento com Vista Mar</h3>
+                    <p class="price">R$ 1.890.000</p>
+                    <div class="features">
+                        <span>3 Quartos</span> • <span>2 Suítes</span> • <span>180m²</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property 3 -->
+            <div class="property-card reveal">
+                <div class="card-img">
+                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Imóvel 3">
+                    <span class="badge">Venda</span>
+                </div>
+                <div class="card-body">
+                    <h3>Cobertura Duplex Moderna</h3>
+                    <p class="price">R$ 3.200.000</p>
+                    <div class="features">
+                        <span>4 Quartos</span> • <span>3 Suítes</span> • <span>290m²</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section 1 -->
+    <section id="sobre" class="about-section dark-contrast">
+        <div class="section-header dark-header">
+            <h2>Quem é Tamara Couto</h2>
+            <p>Conheça a história de quem vai cuidar da sua.</p>
+        </div>
+        <div class="about-container">
+            <div class="about-text reveal">
+                <h2>Do cuidado animal<br>ao cuidado com a sua família</h2>
+                <p>Minha trajetória começou na medicina veterinária, profissão que me ensinou a cuidar com dedicação, carinho e atenção.</p>
+                <p>Hoje, levo essa mesma essência para o mercado imobiliário, ajudando famílias a encontrar o lar ideal com transparência, empatia e comprometimento. Acredito que escolher onde morar é uma das decisões mais importantes da vida, e merece ser tratada com toda a reverência.</p>
+            </div>
+            <div class="about-image reveal delay-1">
+                <img src="assets/images/WhatsApp Image 2026-07-20 at 3.32.08 PM (3).jpeg" alt="Tamara Couto">
+                <div class="decorative-box"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section 2 -->
+    <section class="about-section reverse">
+        <div class="about-container">
+            <div class="about-text reveal delay-1">
+                <h2>Uma mãe construindo lares</h2>
+                <p>Como mãe de três filhos, eu compreendo profundamente a dinâmica, o espaço e a energia que uma casa precisa ter para acomodar o crescimento e a felicidade de uma família.</p>
+                <p>Essa vivência pessoal me permite ter um olhar clínico e humano ao selecionar imóveis que não são apenas paredes, mas sim o cenário de futuras memórias inesquecíveis.</p>
+            </div>
+            <div class="about-image reveal">
+                <img src="assets/images/WhatsApp Image 2026-07-20 at 3.32.09 PM (1).jpeg" alt="Família">
+                <div class="decorative-box"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final Section / Footer -->
+    <section class="final-section">
+        <div class="final-container reveal">
+            <div class="final-image">
+                <img src="assets/images/WhatsApp Image 2026-07-20 at 3.32.10 PM.jpeg" alt="Tamara Couto Final">
+            </div>
+            <h2 style="font-family: var(--font-heading); margin-bottom: 1rem; font-size: 2rem;">Tamara Couto</h2>
+            <div class="final-quote">
+                <blockquote>"Ideias vão transformar essa esquina em algo grande."</blockquote>
+            </div>
+            
+            <div class="final-contact" style="margin-top: 1.5rem;">
+                <h3 style="margin-bottom: 0.5rem; font-weight: 500; font-size: 1rem;">Fale Comigo</h3>
+                <div class="social-icons" style="display: flex; gap: 0.8rem; justify-content: center; margin-bottom: 0;">
+                    <a href="https://www.instagram.com/tamaracoutocorretoradeimoveis/" target="_blank" class="icon-link-white" aria-label="Instagram">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    </a>
+                    <a href="https://wa.me/5567999997768?text=Olá%20Tamara,%20vim%20pelo%20site%20e%20gostaria%20de%20conversar" target="_blank" class="icon-link-white" aria-label="WhatsApp">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content" style="text-align: center; display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+            <div class="logo-container" style="height: 80px; margin-bottom: 1rem;">
+                <img src="assets/logo_final.png" alt="Tamara Couto Logo" class="logo-img">
+            </div>
+            <p>&copy; 2026 Tamara Couto - Corretora Imobiliária | CRECI - MS 15457</p>
+            <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #BBB;">Todos os direitos reservados.</p>
+        </div>
+    </footer>
+    <!-- Property Modal -->
+    <div id="propertyModal" class="property-modal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <div class="modal-body">
+                <!-- Slider -->
+                <div class="modal-slider">
+                    <div class="slider-images" id="sliderImages">
+                        <img id="modalMainImg" src="" alt="Imóvel" class="fade-in">
+                    </div>
+                    <button class="slider-btn prev-btn">&#10094;</button>
+                    <button class="slider-btn next-btn">&#10095;</button>
+                </div>
+                
+                <!-- Details -->
+                <div class="modal-details">
+                    <div class="modal-actions-top" style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                        <button class="share-btn" id="modalShareBtn" title="Compartilhar" onclick="shareImovel(null, window.currentModalImovelId)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </button>
+                    </div>
+                    <h2 id="modalTitle">Título</h2>
+                    <p class="modal-location" id="modalLocation">Localização</p>
+                    <p class="modal-price" id="modalPrice">R$ 0,00</p>
+                    
+                    <div class="modal-features-grid" id="modalFeatures"></div>
+                    
+                    <h3>Descrição</h3>
+                    <p id="modalDesc" class="modal-desc"></p>
+
+                    <h3>Localização</h3>
+                    <div class="modal-map" id="modalMapContainer" style="width: 100%; height: 200px; border-radius: 8px; overflow: hidden; margin-bottom: 2rem;">
+                        <!-- Iframe injected by JS -->
+                    </div>
+                    
+                    <a id="modalWhatsappBtn" href="#" target="_blank" class="btn-primary w-100 mt-4">Entrar em Contato</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="imoveis-data.js"></script>
+    <script src="imoveis-ui.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
