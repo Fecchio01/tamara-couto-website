@@ -2,8 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const grid = document.querySelector(".properties-grid");
     if (!grid) return;
 
-    // The modal HTML is already in index.html
-
     // Render Function
     function renderProperties(dataToRender) {
         grid.innerHTML = "";
@@ -16,12 +14,22 @@ document.addEventListener("DOMContentLoaded", () => {
         dataToRender.forEach((imovel) => {
             const originalIndex = IMOVEIS_DATA.findIndex(i => i.id === imovel.id);
             const cardHTML = `
-                <div class="property-card reveal active" data-index="${originalIndex}" style="cursor: pointer;">
-                    <div class="card-img">
-                        <img src="${imovel.images[0]}" alt="${imovel.title}">
-                        <span class="badge">Venda</span>
+                <div class="property-card reveal active" data-index="${originalIndex}">
+                    <div class="card-img-wrapper">
+                        <div class="card-img-slider" data-card-index="${originalIndex}" data-img-index="0">
+                            <img src="${imovel.images[0]}" alt="${imovel.title}" class="card-main-img">
+                            <span class="badge">Venda</span>
+                            <button class="card-nav card-prev" onclick="cardNavClick(event, ${originalIndex}, -1)">&#10094;</button>
+                            <button class="card-nav card-next" onclick="cardNavClick(event, ${originalIndex}, 1)">&#10095;</button>
+                            <div class="card-dots">
+                                ${imovel.images.slice(0, Math.min(5, imovel.images.length)).map((_, i) => `<span class="card-dot ${i === 0 ? 'active' : ''}"></span>`).join('')}
+                            </div>
+                            <button class="card-share-btn" onclick="shareImovel(event, '${imovel.id}')" title="Compartilhar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body card-open-modal" data-index="${originalIndex}" style="cursor: pointer;">
                         <h3>${imovel.title}</h3>
                         <p class="price">${imovel.price}</p>
                         <div class="card-features">
@@ -31,19 +39,17 @@ document.addEventListener("DOMContentLoaded", () => {
                                 .map(f => `<span class="card-feat-item">${f}</span>`)
                                 .join('')}
                         </div>
-                        <button class="card-share-btn" onclick="shareImovel(event, '${imovel.id}')" title="Compartilhar">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                        </button>
+                        <span class="card-see-more">Ver detalhes →</span>
                     </div>
                 </div>
             `;
             grid.insertAdjacentHTML('beforeend', cardHTML);
         });
 
-        // Re-attach modal listeners
-        document.querySelectorAll(".property-card").forEach(card => {
-            card.addEventListener("click", () => {
-                const index = card.getAttribute("data-index");
+        // Open modal on card-body click only
+        document.querySelectorAll(".card-open-modal").forEach(el => {
+            el.addEventListener("click", () => {
+                const index = el.getAttribute("data-index");
                 currentImovel = IMOVEIS_DATA[index];
                 currentImageIndex = 0;
                 window.currentModalImovelId = currentImovel.id;
@@ -53,6 +59,27 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     }
+
+    // Card photo navigation (without opening modal)
+    window.cardNavClick = function(e, cardIndex, direction) {
+        e.stopPropagation();
+        const imovel = IMOVEIS_DATA[cardIndex];
+        if (!imovel) return;
+        const sliderEl = document.querySelector(`.card-img-slider[data-card-index="${cardIndex}"]`);
+        if (!sliderEl) return;
+        let currentIdx = parseInt(sliderEl.getAttribute("data-img-index") || "0");
+        currentIdx = (currentIdx + direction + imovel.images.length) % imovel.images.length;
+        sliderEl.setAttribute("data-img-index", currentIdx);
+        const img = sliderEl.querySelector(".card-main-img");
+        img.style.opacity = "0";
+        setTimeout(() => {
+            img.src = imovel.images[currentIdx];
+            img.style.opacity = "1";
+        }, 150);
+        // Update dots
+        const dots = sliderEl.querySelectorAll(".card-dot");
+        dots.forEach((dot, i) => dot.classList.toggle("active", i === currentIdx % Math.min(5, imovel.images.length)));
+    };
 
     // Initialize Filter State
     let currentCategory = "all";
@@ -66,7 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const type = i.type || "";
                 const title = i.title || "";
                 if (currentCategory === "Apartamento") {
-                    // Match apartamento or apt but EXCLUDE cobertura
                     return (type.toLowerCase().includes("apart") || title.toLowerCase().includes("apart") || 
                             type.toLowerCase().includes("apt") || title.toLowerCase().includes("apt")) &&
                            !type.toLowerCase().includes("cobertura") && !title.toLowerCase().includes("cobertura");
@@ -120,25 +146,39 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial render
     renderProperties(IMOVEIS_DATA);
 
-    // Add share function globally
+    // Share function
     window.shareImovel = function(e, id) {
         if (e) e.stopPropagation();
         const imovel = IMOVEIS_DATA.find(i => i.id === id);
         if (!imovel) return;
-        
         const shareData = {
             title: imovel.title,
-            text: `Confira este excelente imóvel: ${imovel.title} por ${imovel.price}`,
+            text: `Confira este imóvel: ${imovel.title} por ${imovel.price}`,
             url: window.location.href.split('#')[0]
         };
-        
         if (navigator.share) {
             navigator.share(shareData).catch(console.error);
         } else {
-            // Fallback: Copy to clipboard
             navigator.clipboard.writeText(`${shareData.text} - ${shareData.url}`);
             alert('Link copiado para a área de transferência!');
         }
+    };
+
+    // Lead form submit
+    window.submitLeadForm = function(e, formId) {
+        e.preventDefault();
+        const form = document.getElementById(formId);
+        const data = new FormData(form);
+        const name = data.get('name') || '';
+        const phone = data.get('phone') || '';
+        const email = data.get('email') || '';
+        const message = data.get('message') || '';
+        const imovelInfo = window.currentModalImovelId
+            ? `Interesse no imóvel: ${IMOVEIS_DATA.find(i => i.id === window.currentModalImovelId)?.title || ''}. `
+            : '';
+        const text = encodeURIComponent(`Olá Tamara! ${imovelInfo}Meu nome é ${name}, telefone: ${phone}, email: ${email}. ${message}`);
+        window.open(`https://wa.me/5567999997768?text=${text}`, '_blank');
+        form.reset();
     };
 
     // Modal Logic
@@ -147,11 +187,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentImageIndex = 0;
     let currentImovel = null;
 
-
     // Close Modal
     closeModal.addEventListener("click", () => {
         modal.classList.remove("active");
         document.body.style.overflow = "auto";
+        window.currentModalImovelId = null;
     });
 
     // Close on Outside Click
@@ -159,17 +199,20 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.target === modal) {
             modal.classList.remove("active");
             document.body.style.overflow = "auto";
+            window.currentModalImovelId = null;
         }
     });
 
     // Slider Logic
-    document.querySelector(".prev-btn").addEventListener("click", () => {
+    document.querySelector(".prev-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
         if (!currentImovel) return;
         currentImageIndex = (currentImageIndex > 0) ? currentImageIndex - 1 : currentImovel.images.length - 1;
         renderSliderImage();
     });
 
-    document.querySelector(".next-btn").addEventListener("click", () => {
+    document.querySelector(".next-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
         if (!currentImovel) return;
         currentImageIndex = (currentImageIndex < currentImovel.images.length - 1) ? currentImageIndex + 1 : 0;
         renderSliderImage();
@@ -178,7 +221,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateModalUI() {
         if (!currentImovel) return;
         document.getElementById("modalTitle").innerText = currentImovel.title;
-        // Check if modalLocation exists, if not, create or ignore
         const locElem = document.getElementById("modalLocation");
         if (locElem) {
             locElem.innerText = `${currentImovel.type} • ${currentImovel.location} (${currentImovel.neighborhood})`;
@@ -189,34 +231,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const featuresHtml = currentImovel.features.map(f => `<div class="feature-item">${f}</div>`).join('');
         document.getElementById("modalFeatures").innerHTML = featuresHtml;
 
-        let proxHtml = '';
-        if (currentImovel.proximidades && currentImovel.proximidades.length > 0) {
-            proxHtml = `<h3 style="margin-top: 1rem;">Tem nas proximidades</h3>
-            <div class="modal-features-grid" style="margin-bottom: 2rem;">
-                ${currentImovel.proximidades.map(p => `<div class="feature-item">${p}</div>`).join('')}
-            </div>`;
-        }
-        
-        let proxContainer = document.getElementById("modalProxContainer");
-        if (!proxContainer) {
-            const mapHeading = document.querySelector(".modal-map h3");
-            if (mapHeading) {
-                mapHeading.insertAdjacentHTML('beforebegin', '<div id="modalProxContainer"></div>');
-            } else {
-                document.getElementById("modalDesc").insertAdjacentHTML('afterend', '<div id="modalProxContainer"></div>');
-            }
-            proxContainer = document.getElementById("modalProxContainer");
-        }
-        proxContainer.innerHTML = proxHtml;
+        // Bank financing links - verified working URLs
+        document.getElementById("bankBB").href = "https://www.bb.com.br/site/pra-voce/financiamentos/financiamento-imobiliario/";
+        document.getElementById("bankSantander").href = "https://www.santander.com.br/imobiliario";
+        document.getElementById("bankItau").href = "https://www.itau.com.br/emprestimos-financiamentos/credito-imobiliario/";
+        document.getElementById("bankBradesco").href = "https://banco.bradesco/";
+        document.getElementById("bankInter").href = "https://inter.co/credito-pessoal-e-credito-imobiliario/";
+        document.getElementById("bankCaixa").href = "https://www.caixa.gov.br/voce/habitacao/Paginas/default.aspx";
 
         const mapQuery = `${currentImovel.neighborhood}, ${currentImovel.location}`;
         document.getElementById("modalMapContainer").innerHTML = `<iframe width="100%" height="100%" frameborder="0" style="border:0" src="https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&t=&z=14&ie=UTF8&iwloc=&output=embed" allowfullscreen></iframe>`;
 
         const waText = encodeURIComponent(`Olá Tamara, vi o imóvel "${currentImovel.title}" no seu site e gostaria de mais informações.`);
-        const whatsappBtn = document.getElementById("modalWhatsappBtn") || document.getElementById("modalWhatsapp");
+        const whatsappBtn = document.getElementById("modalWhatsappBtn");
         if (whatsappBtn) {
             whatsappBtn.href = `https://wa.me/5567999997768?text=${waText}`;
         }
+
+        // Reset modal lead form hidden field reference
+        window.currentModalImovelId = currentImovel.id;
 
         renderSliderImage();
     }
@@ -226,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (mainImg) {
             mainImg.src = currentImovel.images[currentImageIndex];
             mainImg.classList.remove("fade-in");
-            void mainImg.offsetWidth; // Trigger reflow
+            void mainImg.offsetWidth;
             mainImg.classList.add("fade-in");
         }
     }
