@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
         dataToRender.forEach((imovel) => {
             const originalIndex = IMOVEIS_DATA.findIndex(i => i.id === imovel.id);
             const cardHTML = `
-                <div class="property-card reveal active" data-index="${originalIndex}">
+                <div class="property-card reveal" data-index="${originalIndex}" style="--card-index: ${dataToRender.indexOf(imovel)}">
                     <div class="card-img-wrapper">
                         <div class="card-img-slider" data-card-index="${originalIndex}" data-img-index="0">
                             <img src="${imovel.images[0]}" alt="${imovel.title}" class="card-main-img">
@@ -58,6 +58,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.body.style.overflow = "hidden";
             });
         });
+
+        // Let the page-level reveal observer animate freshly filtered cards on scroll.
+        document.dispatchEvent(new Event("properties:rendered"));
     }
 
     // Card photo navigation (without opening modal)

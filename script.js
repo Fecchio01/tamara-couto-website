@@ -11,8 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Scroll Reveal Animation
-    const revealElements = document.querySelectorAll('.reveal');
-
     const revealCallback = (entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -30,7 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const revealObserver = new IntersectionObserver(revealCallback, revealOptions);
 
-    revealElements.forEach(el => {
-        revealObserver.observe(el);
-    });
+    const observeRevealElements = () => {
+        document.querySelectorAll('.reveal:not(.active)').forEach(el => {
+            revealObserver.observe(el);
+        });
+    };
+
+    observeRevealElements();
+    document.addEventListener('properties:rendered', observeRevealElements);
 });
