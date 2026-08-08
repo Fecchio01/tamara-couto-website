@@ -700,8 +700,13 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 
 /* Refined motion for the property catalogue and image transitions */
+.property-card.reveal {
+    transform: translateY(12px);
+    transition-duration: 340ms;
+}
+
 .property-card.reveal.active {
-    transition-delay: calc(var(--card-index, 0) * 35ms);
+    transition-delay: calc(var(--card-index, 0) * 12ms);
 }
 
 .card-main-img {
@@ -1220,9 +1225,9 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 .btn-secondary {
     display: inline-block;
     padding: 0.8rem 1.8rem;
-    background: transparent;
+    background: var(--secondary);
     color: #fff;
-    border: 2px solid rgba(255,255,255,0.6);
+    border: 2px solid var(--secondary);
     border-radius: 8px;
     font-weight: 600;
     font-size: 1rem;
@@ -1232,8 +1237,8 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 
 .btn-secondary:hover {
-    background: rgba(255,255,255,0.15);
-    border-color: #fff;
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
 }
 
 .btn-secondary.large {

@@ -5,7 +5,7 @@ const IMOVEIS_DATA = [
     "type": "Apartamento",
     "location": "Campo Grande - MS",
     "neighborhood": "Rita Vieira",
-    "price": "R$ 380.000",
+    "price": "R$ 200.000",
     "features": [
       "Área total: 47,00 m²",
       "Área construída: 47,00 m²",
@@ -66,7 +66,7 @@ const IMOVEIS_DATA = [
     "type": "Apartamento",
     "location": "Campo Grande - MS",
     "neighborhood": "Royal Park",
-    "price": "R$ 750.000",
+    "price": "R$ 1.400.000",
     "features": [
       "Área total: 257,00 m²",
       "Área construída: 142,00 m²",
@@ -137,7 +137,7 @@ const IMOVEIS_DATA = [
     "type": "Apto Cobertura Duplex",
     "location": "Campo Grande - MS",
     "neighborhood": "Centro",
-    "price": "R$ 1.200.000",
+    "price": "R$ 540.000",
     "features": [
       "Área total: 221,00 m²",
       "Área construída: 167,00 m²",
@@ -208,7 +208,7 @@ const IMOVEIS_DATA = [
     "type": "Casa Térrea",
     "location": "Campo Grande - MS",
     "neighborhood": "Bela Laguna",
-    "price": "R$ 450.000",
+    "price": "R$ 350.000",
     "features": [
       "Área total: 180,00 m²",
       "Área construída: 117,73 m²",
@@ -261,7 +261,7 @@ const IMOVEIS_DATA = [
     "type": "Casa Térrea",
     "location": "Campo Grande - MS",
     "neighborhood": "Santo Amaro",
-    "price": "R$ 290.000",
+    "price": "R$ 750.000",
     "features": [
       "Área total: 456,00 m²",
       "Área construída: 202,45 m²",
@@ -317,7 +317,7 @@ const IMOVEIS_DATA = [
     "type": "Casa em Condomínio",
     "location": "Bonito - MS",
     "neighborhood": "Solar dos Lagos",
-    "price": "R$ 1.850.000",
+    "price": "R$ 1.250.000",
     "features": [
       "Área total: 525,00 m²",
       "Área construída: 318,00 m²",
@@ -372,7 +372,7 @@ const IMOVEIS_DATA = [
     "type": "Terreno em Condomínio",
     "location": "Campo Grande - MS",
     "neighborhood": "Altos da Afonso Pena",
-    "price": "R$ 550.000",
+    "price": "R$ 2.700.000",
     "features": [
       "Área total: 473,00 m²",
       "Área construída: 473,00 m²",
@@ -422,7 +422,7 @@ const IMOVEIS_DATA = [
     "type": "Terreno em Condomínio",
     "location": "Campo Grande - MS",
     "neighborhood": "Altos da Afonso Pena",
-    "price": "R$ 580.000",
+    "price": "R$ 2.700.000",
     "features": [
       "Área total: 472,87 m²",
       "Condomínio: R$ 1.200,00",
@@ -478,7 +478,7 @@ const IMOVEIS_DATA = [
     "type": "Terreno em Condomínio",
     "location": "Campo Grande - MS",
     "neighborhood": "Residencial Alphaville III",
-    "price": "R$ 620.000",
+    "price": "R$ 480.000",
     "features": [
       "Área total: 360,00 m²",
       "Salão de Festas",
@@ -514,7 +514,7 @@ const IMOVEIS_DATA = [
     "type": "Terreno em Condomínio",
     "location": "Dourados - MS",
     "neighborhood": "Residencial Porto Royale",
-    "price": "R$ 420.000",
+    "price": "R$ 227.300",
     "features": [
       "Área total: 252,56 m²",
       "Salão de Festas",
