@@ -595,10 +595,12 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 
 .about-section.reverse {
     background-color: var(--bg-light);
+    padding-bottom: clamp(2.25rem, 3.5vw, 3rem);
 }
 
 .field-section {
     background-color: #F2FAFA;
+    padding-top: clamp(2.25rem, 3.5vw, 3rem);
 }
 
 .about-container {
