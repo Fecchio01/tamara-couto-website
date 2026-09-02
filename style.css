@@ -68,6 +68,55 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     font-size: 1.1rem;
 }
 
+.hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.hero-property-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    border: 1px solid rgba(45, 52, 54, 0.18);
+    border-radius: 999px;
+    padding: 0.75rem 1rem 0.75rem 1.1rem;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 8px 20px rgba(45, 52, 54, 0.06);
+    transition: color 0.25s ease, border-color 0.25s ease, background-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.hero-property-link span {
+    display: inline-grid;
+    place-items: center;
+    width: 1.55rem;
+    height: 1.55rem;
+    border-radius: 50%;
+    color: var(--primary-dark);
+    background: var(--light);
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.hero-property-link:hover {
+    color: var(--primary-dark);
+    border-color: var(--primary);
+    background: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(45, 52, 54, 0.1);
+}
+
+.hero-property-link:focus-visible {
+    outline: 3px solid rgba(100, 218, 220, 0.4);
+    outline-offset: 3px;
+}
+
 /* Navbar */
 .navbar {
     position: fixed;
@@ -188,25 +237,43 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 
 .hero-content .kicker {
-    font-size: 1rem;
+    font-size: 0.95rem;
     text-transform: uppercase;
     letter-spacing: 0.15em;
     color: var(--primary);
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
 }
 
 .hero-content h1 {
-    font-size: clamp(2.5rem, 4vw, 4.5rem);
-    line-height: 1.1;
-    margin-bottom: 1.5rem;
+    font-size: clamp(3rem, 4vw, 4.5rem);
+    line-height: 1.08;
+    margin-bottom: 1.25rem;
     font-weight: 600;
 }
 
 .hero-content .hero-desc {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: var(--text-muted);
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.5rem;
     font-weight: 400;
+}
+
+.hero-content .hero-trust {
+    margin-top: 0;
+    margin-bottom: 1.75rem;
+}
+
+.hero-content .hero-trust strong {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.hero-kicker-role {
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
 }
 
 /* Properties Section */
@@ -229,14 +296,15 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 
 .section-header h2 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+    font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+    line-height: 1.15;
+    margin-bottom: 0.75rem;
     color: var(--text-main);
 }
 
 .section-header p {
     color: var(--text-muted);
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
 .filters-container {
@@ -485,7 +553,7 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 
 .about-section {
-    padding: 6rem 2rem;
+    padding: clamp(5rem, 8vw, 7rem) 2rem clamp(5.5rem, 9vw, 7.5rem);
     background-color: #F8F8F9;
 }
 
@@ -527,12 +595,16 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     background-color: var(--bg-light);
 }
 
+.field-section {
+    background-color: #F2FAFA;
+}
+
 .about-container {
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    gap: clamp(2.75rem, 5vw, 5rem);
     align-items: center;
 }
 
@@ -546,15 +618,44 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 
 .about-text h2 {
-    font-size: 2.5rem;
-    margin-bottom: 1.5rem;
-    line-height: 1.2;
+    max-width: 20ch;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: clamp(1.7rem, 2.5vw, 2.15rem);
+    margin-bottom: 1.75rem;
+    line-height: 1.12;
+    letter-spacing: normal;
+    text-wrap: balance;
 }
 
 .about-text p {
     font-size: 1.1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.85rem;
     color: var(--text-muted);
+}
+
+.about-subsection {
+    margin-top: 3.75rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.about-section:not(.dark-contrast) .about-subsection {
+    border-top-color: var(--border);
+}
+
+.about-subsection h2 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: clamp(1.35rem, 2vw, 1.7rem);
+    margin-bottom: 1.25rem;
+    line-height: 1.15;
+    letter-spacing: normal;
+    text-wrap: balance;
+}
+
+.about-text strong {
+    font-weight: 600;
 }
 
 .about-image {
@@ -579,7 +680,7 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 
 /* Final Section */
 .final-section {
-    padding: 2.5rem 1.5rem 1.5rem;
+    padding: 2.25rem 1.5rem 1.75rem;
     background-color: var(--primary);
     color: #FFF;
     text-align: center;
@@ -612,9 +713,9 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 
 .final-image {
-    width: 70px;
-    height: 70px;
-    margin: 0 auto 0.8rem;
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 0.7rem;
     border-radius: 50%;
     overflow: hidden;
     border: 2px solid rgba(255,255,255,0.4);
@@ -624,6 +725,60 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center 22%;
+}
+
+.final-title {
+    margin: 0.35rem 0 0.7rem;
+    font-family: var(--font-heading);
+    font-size: clamp(1.35rem, 3vw, 1.75rem);
+    font-weight: 600;
+    line-height: 1.06;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.final-name {
+    margin-bottom: 0.1rem;
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+}
+
+.final-role {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    opacity: 0.88;
+}
+
+.final-message {
+    max-width: 28rem;
+    margin: 0 auto 0.5rem;
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.final-phone {
+    margin-bottom: 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.final-contact {
+    margin-top: 0.85rem;
+}
+
+.final-contact h3 {
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.final-contact .social-icons {
+    display: flex;
+    gap: 0.65rem;
+    justify-content: center;
+    margin-bottom: 0;
 }
 
 .final-quote blockquote {
@@ -759,6 +914,9 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
         width: 100%;
         height: 400px;
         order: -1;
+    }
+    .hero-actions {
+        justify-content: center;
     }
     .nav-links {
         display: none; /* simple mobile menu for now */
