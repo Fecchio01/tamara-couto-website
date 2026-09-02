@@ -39,8 +39,8 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 .brand-text {
     font-family: var(--font-heading);
     font-size: 1.5rem;
-    font-weight: bold;
-    letter-spacing: -0.02em;
+    font-weight: 400;
+    letter-spacing: 0.08em;
     color: var(--bg-dark);
 }
 
@@ -146,6 +146,11 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     gap: 1rem;
 }
 
+.brand .logo-container {
+    width: 52px;
+    position: relative;
+}
+
 .logo-container {
     height: 50px;
     display: flex;
@@ -161,10 +166,24 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 
 .brand-text {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: 1.15rem;
+    font-weight: 400;
     font-family: var(--font-heading);
     color: var(--text-main);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.brand .brand-symbol {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    width: 122px;
+    max-width: none;
+    height: auto;
+    transform: translateX(-50%);
+    filter: grayscale(1) contrast(8) brightness(1.15);
+    clip-path: inset(0 0 24px 0);
 }
 
 .footer-brand-text {
