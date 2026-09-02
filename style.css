@@ -560,12 +560,12 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 
 .about-section.dark-contrast {
-    background-color: #1A1A1A; /* Dark contrast */
-    color: #FFFFFF;
+    background-color: #FFFFFF;
+    color: var(--text-main);
 }
 
 .dark-header h2, .dark-header p {
-    color: #FFFFFF !important;
+    color: var(--text-main) !important;
 }
 
 .icon-link {
@@ -587,10 +587,10 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 .dark-contrast .about-text h2, 
 .dark-contrast .about-text p {
-    color: #FFFFFF;
+    color: var(--text-main);
 }
 .dark-contrast .about-text p {
-    opacity: 0.8;
+    opacity: 1;
 }
 
 .about-section.reverse {
@@ -643,6 +643,10 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 
 .about-section:not(.dark-contrast) .about-subsection {
+    border-top-color: var(--border);
+}
+
+.about-section.dark-contrast .about-subsection {
     border-top-color: var(--border);
 }
 
