@@ -175,10 +175,16 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 
 .brand .brand-symbol {
-    display: block;
-    width: 46px;
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    width: 122px;
     max-width: none;
     height: auto;
+    transform: translateX(-50%);
+    filter: grayscale(1) contrast(8) brightness(1.15);
+    clip-path: inset(0 0 24px 0);
+    mix-blend-mode: multiply;
 }
 
 .footer-brand-text {
