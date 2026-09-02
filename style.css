@@ -195,7 +195,7 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 .hero.split {
     position: relative;
     height: 100vh;
-    min-height: 750px;
+    min-height: min(750px, 100dvh);
     display: flex;
     align-items: stretch; /* Forces children to stretch from top to bottom of section */
     justify-content: space-between;
@@ -205,7 +205,7 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     max-width: 1300px;
     margin: 0 auto;
     background-color: var(--bg-light);
-    gap: 4rem;
+    gap: clamp(2rem, 4vw, 4rem);
     overflow: hidden;
 }
 
@@ -214,14 +214,15 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     display: flex;
     flex-direction: column;
     justify-content: center; /* Vertically centers the text */
-    padding: 2rem 0;
-    max-width: 600px;
+    padding: 1.5rem 0;
+    max-width: 640px;
     z-index: 2;
 }
 
 .hero-image-col {
     height: auto; /* Automatically stretches to fill the section height exactly */
-    max-width: 50vw; 
+    width: clamp(320px, 34vw, 480px);
+    max-width: none;
     aspect-ratio: 9 / 16;
     border-radius: 0;
     overflow: hidden;
@@ -245,14 +246,15 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 }
 
 .hero-content h1 {
-    font-size: clamp(3rem, 4vw, 4.5rem);
+    font-size: clamp(2.7rem, 3.4vw, 4rem);
     line-height: 1.08;
     margin-bottom: 1.25rem;
     font-weight: 600;
+    text-wrap: balance;
 }
 
 .hero-content .hero-desc {
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: var(--text-muted);
     margin-bottom: 1.5rem;
     font-weight: 400;
@@ -1397,6 +1399,22 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 .btn-secondary:hover {
     background: var(--primary-dark);
     border-color: var(--primary-dark);
+}
+
+@media (min-width: 769px) and (max-width: 1100px) {
+    .hero.split {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+        gap: 2rem;
+    }
+
+    .hero-content h1 {
+        font-size: clamp(2.55rem, 3.4vw, 3.45rem);
+    }
+
+    .hero-image-col {
+        width: clamp(280px, 35vw, 400px);
+    }
 }
 
 .btn-secondary.large {
