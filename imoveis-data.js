@@ -116,7 +116,7 @@ const IMOVEIS_DATA = [
       "Esgoto",
       "Elevador"
     ],
-    "description": "Apartamento novo à venda em Royal Park, Campo Grande MS, aceitando financiamento com 3 quartos, suíte, churrasqueira, piscina, cozinha, vaga coberta, elevador.",
+    "description": "Apartamento novo à venda em Royal Park, Campo Grande MS, aceitando financiamento com 3 dormitórios, churrasqueira, piscina, cozinha, vaga coberta, elevador.",
     "images": [
       "assets/imoveis/imovel-1/foto-0.jpg",
       "assets/imoveis/imovel-1/foto-1.jpg",
@@ -169,7 +169,7 @@ const IMOVEIS_DATA = [
       "Área de serviço",
       "Aceita permuta"
     ],
-    "description": "Casa-Térrea à venda em Bela Laguna, Campo Grande MS, aceitando financiamento com 3 quartos, suíte, cozinha, área de serviço, vaga coberta, cerca elétrica.",
+    "description": "Casa-Térrea à venda em Bela Laguna, Campo Grande MS, aceitando financiamento com 3 dormitórios, cozinha, área de serviço, vaga coberta, cerca elétrica.",
     "images": [
       "assets/imoveis/imovel-3/foto-0.jpg",
       "assets/imoveis/imovel-3/foto-1.jpg",
@@ -280,7 +280,7 @@ const IMOVEIS_DATA = [
       "Portão elétrico",
       "Rampa de acessibilidade"
     ],
-    "description": "Casa-Térrea-Condomínio à venda em Solar dos Lagos, Bonito MS com 4 quartos, suíte, churrasqueira, piscina, cozinha planejada, área de serviço.",
+    "description": "Casa-Térrea-Condomínio à venda em Solar dos Lagos, Bonito MS com 4 dormitórios, churrasqueira, piscina, cozinha planejada, área de serviço.",
     "images": [
       "assets/imoveis/imovel-5/foto-0.jpg",
       "assets/imoveis/imovel-5/foto-1.jpg",
@@ -444,7 +444,7 @@ const IMOVEIS_DATA = [
       "Asfalto",
       "Muro"
     ],
-    "description": "Apartamento mobiliado no 8º andar do Varandas Bella Vista, em Itanhangá Park, Campo Grande - MS. São 76 m², 2 quartos, 3 banheiros e 1 vaga de garagem.",
+    "description": "Apartamento à venda em Itanhangá Park, Campo Grande MS, aceitando financiamento com 2 dormitórios, closet, churrasqueira, piscina, cozinha planejada.",
     "images": [
       "assets/imoveis/novos/apartamento-bella-vista-0.jpg",
       "assets/imoveis/novos/apartamento-bella-vista-1.jpg",
@@ -502,7 +502,7 @@ const IMOVEIS_DATA = [
       "Área de serviço",
       "Rampa de acessibilidade"
     ],
-    "description": "Sobrado em condomínio no Jardim Itatiaia, a uma quadra da Lagoa, em Campo Grande - MS. Possui 118 m², 3 quartos sendo 1 suíte, 3 banheiros e 1 vaga de garagem.",
+    "description": "Em condomínio reservado com somente 2 residências. Esta é a unidade da frente, com ótima privacidade e segurança. Ambiente tranquilo, reservado e super seguro. Piso superior: 1 suíte com sacada, 2 quartos e banheiro. Piso térreo: sala de TV, sala de jantar, cozinha, lavabo, lavanderia coberta e quintal privativo gramado e totalmente fechado. Garagem coberta para 1 veículo, com possibilidade de estacionar mais 2 carros na área comum em frente à residência. Em excelente localização, a apenas 1 quadra da Lagoa Itatiaia. Lavanderia coberta, quintal privativo, gramado e totalmente privativo. Possibilidade de estacionar mais 1 ou 2 veículos na área comum, em frente. Ao lado da Lagoa Itatiaia. Região tranquila e valorizada.",
     "images": [
       "assets/imoveis/novos/sobrado-jardim-itatiaia-0.jpg",
       "assets/imoveis/novos/sobrado-jardim-itatiaia-1.jpg",
@@ -567,7 +567,7 @@ const IMOVEIS_DATA = [
       "Rede elétrica",
       "Rampa de acessibilidade"
     ],
-    "description": "Galpão e salão comercial reformado para aluguel no bairro Monte Castelo, em Campo Grande - MS, com 1.200 m² de área total, 1.000 m² de área construída e 6 banheiros.",
+    "description": "Imóvel Comercial para alugar em Monte Castelo, Campo Grande MS. Galpão - salão comercial reformado - mais de 1.000 m². Agende sua visita!.",
     "images": [
       "assets/imoveis/novos/galpao-monte-castelo-0.jpg",
       "assets/imoveis/novos/galpao-monte-castelo-1.jpg",
