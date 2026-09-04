@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="card-img-wrapper">
                         <div class="card-img-slider" data-card-index="${originalIndex}" data-img-index="0">
                             <img src="${imovel.images[0]}" alt="${imovel.title}" class="card-main-img">
-                            <span class="badge">Venda</span>
+                            <span class="badge">${imovel.purpose || 'Venda'}</span>
                             <button class="card-nav card-prev" onclick="cardNavClick(event, ${originalIndex}, -1)">&#10094;</button>
                             <button class="card-nav card-next" onclick="cardNavClick(event, ${originalIndex}, 1)">&#10095;</button>
                             <div class="card-dots">
@@ -230,6 +230,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         document.getElementById("modalPrice").innerText = currentImovel.price;
         document.getElementById("modalDesc").innerText = currentImovel.description;
+
+        const proximitySection = document.getElementById("modalProximidadesSection");
+        const proximityList = document.getElementById("modalProximidades");
+        if (proximitySection && proximityList) {
+            const proximidades = currentImovel.proximidades || [];
+            proximitySection.hidden = proximidades.length === 0;
+            proximityList.innerHTML = proximidades.map(item => `<span class="proximity-chip">${item}</span>`).join('');
+        }
+
+        const sourceLink = document.getElementById("modalSourceLink");
+        if (sourceLink) {
+            sourceLink.hidden = !currentImovel.sourceUrl;
+            sourceLink.href = currentImovel.sourceUrl || '#';
+        }
         
         const featuresHtml = currentImovel.features.map(f => `<div class="feature-item">${f}</div>`).join('');
         document.getElementById("modalFeatures").innerHTML = featuresHtml;

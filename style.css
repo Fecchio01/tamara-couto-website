@@ -1123,6 +1123,32 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     margin-bottom: 2rem;
 }
 
+.modal-proximidades {
+    margin-bottom: 1.5rem;
+}
+
+.proximity-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.proximity-chip {
+    padding: .42rem .7rem;
+    border-radius: 999px;
+    background: rgba(42, 109, 104, .1);
+    color: var(--primary-dark);
+    font-size: .82rem;
+}
+
+.modal-source-link {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+    font-size: .9rem;
+    font-weight: 700;
+}
+
 .w-100 { width: 100%; text-align: center; }
 .mt-4 { margin-top: 1.5rem; }
 
