@@ -11,10 +11,12 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        dataToRender.forEach((imovel) => {
+        const orderedData = [...dataToRender].sort((a, b) => Number(Boolean(b.isNew)) - Number(Boolean(a.isNew)));
+
+        orderedData.forEach((imovel) => {
             const originalIndex = IMOVEIS_DATA.findIndex(i => i.id === imovel.id);
             const cardHTML = `
-                <div class="property-card reveal" data-index="${originalIndex}" style="--card-index: ${dataToRender.indexOf(imovel)}">
+                    <div class="property-card reveal" data-index="${originalIndex}" style="--card-index: ${orderedData.indexOf(imovel)}">
                     <div class="card-img-wrapper">
                         <div class="card-img-slider" data-card-index="${originalIndex}" data-img-index="0">
                             <img src="${imovel.images[0]}" alt="${imovel.title}" class="card-main-img">

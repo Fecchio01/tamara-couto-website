@@ -552,6 +552,7 @@ const IMOVEIS_DATA = [
   },
   {
     "id": "697256",
+    "isNew": true,
     "title": "Apartamento mobiliado - 8º andar - Varandas Bella Vista",
     "type": "Apartamento",
     "location": "Campo Grande - MS",
@@ -626,6 +627,7 @@ const IMOVEIS_DATA = [
   },
   {
     "id": "697307",
+    "isNew": true,
     "title": "Sobrado com 3 quartos e suíte - 1 quadra da Lagoa",
     "type": "Sobrado",
     "location": "Campo Grande - MS",
@@ -688,12 +690,13 @@ const IMOVEIS_DATA = [
   },
   {
     "id": "698182",
+    "isNew": true,
     "title": "Galpão - salão comercial reformado - mais de 1.000 m²",
     "type": "Imóvel Comercial",
     "purpose": "Aluguel",
     "location": "Campo Grande - MS",
     "neighborhood": "Monte Castelo",
-    "price": "R$ 18.000/mês",
+    "price": "R$ 18.000",
     "features": [
       "Área total: 1.200,00 m²",
       "Área construída: 1.000,00 m²",
