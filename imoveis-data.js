@@ -1,7 +1,7 @@
 const IMOVEIS_DATA = [
   {
     "id": "665313",
-    "title": "Apartamento no Rita Vieira",
+    "title": "Apartamento - condomínio Rossi - Três Barras I",
     "type": "Apartamento",
     "location": "Campo Grande - MS",
     "neighborhood": "Rita Vieira",
@@ -62,7 +62,7 @@ const IMOVEIS_DATA = [
   },
   {
     "id": "618158",
-    "title": "Apartamento no Royal Park",
+    "title": "Apartamento - Passarela - 142 m² - andar alto - 3 vagas",
     "type": "Apartamento",
     "location": "Campo Grande - MS",
     "neighborhood": "Royal Park",
@@ -133,7 +133,7 @@ const IMOVEIS_DATA = [
   },
   {
     "id": "552642",
-    "title": "Casa Térrea - Bela Laguna",
+    "title": "Casa - Bela Laguna - 1 suíte - 2 quartos",
     "type": "Casa Térrea",
     "location": "Campo Grande - MS",
     "neighborhood": "Bela Laguna",
@@ -186,7 +186,7 @@ const IMOVEIS_DATA = [
   },
   {
     "id": "657241",
-    "title": "Casa Térrea - Santo Amaro",
+    "title": "Casa térrea 3 quartos sendo 1 suíte - com piscina",
     "type": "Casa Térrea",
     "location": "Campo Grande - MS",
     "neighborhood": "Santo Amaro",
@@ -242,7 +242,7 @@ const IMOVEIS_DATA = [
   },
   {
     "id": "649637",
-    "title": "Casa Térrea - Solar dos Lagos",
+    "title": "Casa em Bonito - Solar dos Lagos - 4 suítes",
     "type": "Casa em Condomínio",
     "location": "Bonito - MS",
     "neighborhood": "Solar dos Lagos",
@@ -297,7 +297,7 @@ const IMOVEIS_DATA = [
   },
   {
     "id": "689393",
-    "title": "Terreno Altos da Afonso Pena (2)",
+    "title": "Terreno - condomínio Altos da Afonso Pena",
     "type": "Terreno em Condomínio",
     "location": "Campo Grande - MS",
     "neighborhood": "Altos da Afonso Pena",
@@ -353,11 +353,11 @@ const IMOVEIS_DATA = [
   },
   {
     "id": "657381",
-    "title": "Terreno Residencial Alphaville III",
+    "title": "Ótimo terreno - Alphaville III",
     "type": "Terreno em Condomínio",
     "location": "Campo Grande - MS",
     "neighborhood": "Residencial Alphaville III",
-    "price": "R$ 480.000",
+    "price": "R$ 470.000",
     "features": [
       "Área total: 360,00 m²",
       "Salão de Festas",

@@ -2,6 +2,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const grid = document.querySelector(".properties-grid");
     if (!grid) return;
 
+    // Galerias oficiais sincronizadas com os anúncios do InfoImóveis.
+    const officialGalleryCounts = {
+        "665313": 27,
+        "618158": 19,
+        "552642": 13,
+        "657241": 29,
+        "649637": 29,
+        "689393": 16,
+        "657381": 1,
+        "697256": 12,
+        "697307": 5,
+        "698182": 3
+    };
+    IMOVEIS_DATA.forEach((imovel) => {
+        const count = officialGalleryCounts[imovel.id];
+        if (count) {
+            imovel.images = Array.from({ length: count }, (_, index) =>
+                `assets/imoveis/oficiais/${imovel.id}-${index}.jpg`
+            );
+        }
+    });
+
     // Render Function
     function renderProperties(dataToRender) {
         grid.innerHTML = "";
