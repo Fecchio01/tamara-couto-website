@@ -665,7 +665,11 @@ const IMOVEIS_DATA = [
     ],
     "description": "Sobrado em condomínio no Jardim Itatiaia, a uma quadra da Lagoa, em Campo Grande - MS. Possui 118 m², 3 quartos sendo 1 suíte, 3 banheiros e 1 vaga de garagem.",
     "images": [
-      "assets/imoveis/novos/sobrado-jardim-itatiaia.jpg"
+      "assets/imoveis/novos/sobrado-jardim-itatiaia-0.jpg",
+      "assets/imoveis/novos/sobrado-jardim-itatiaia-1.jpg",
+      "assets/imoveis/novos/sobrado-jardim-itatiaia-2.jpg",
+      "assets/imoveis/novos/sobrado-jardim-itatiaia-3.jpg",
+      "assets/imoveis/novos/sobrado-jardim-itatiaia-4.jpg"
     ],
     "proximidades": [
       "Padaria",
@@ -725,7 +729,9 @@ const IMOVEIS_DATA = [
     ],
     "description": "Galpão e salão comercial reformado para aluguel no bairro Monte Castelo, em Campo Grande - MS, com 1.200 m² de área total, 1.000 m² de área construída e 6 banheiros.",
     "images": [
-      "assets/imoveis/novos/galpao-monte-castelo.jpg"
+      "assets/imoveis/novos/galpao-monte-castelo-0.jpg",
+      "assets/imoveis/novos/galpao-monte-castelo-1.jpg",
+      "assets/imoveis/novos/galpao-monte-castelo-2.jpg"
     ],
     "proximidades": [],
     "sourceUrl": "https://www.infoimoveis.com.br/imovel/aluguel-imovel-comercial-ms-campo-grande-monte-castelo/698182"
