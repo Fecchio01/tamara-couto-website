@@ -5,8 +5,17 @@ function defaultFallback() {
   return globalThis.window?.IMOVEIS_DATA ?? globalThis.IMOVEIS_DATA ?? [];
 }
 
-function defaultPublicImageUrl(client, path) {
-  return client.storage?.from('property-images')?.getPublicUrl(path)?.data?.publicUrl ?? path;
+async function defaultPublicImageUrl(client, path) {
+  const storage = client.storage?.from('property-images');
+  if (!storage || typeof storage.createSignedUrl !== 'function') {
+    throw new Error('Creating property image URL failed: signed URL support unavailable');
+  }
+  const { data, error } = await storage.createSignedUrl(path, 3600);
+  if (error || !data?.signedUrl) {
+    const detail = typeof error?.message === 'string' ? error.message.replace(/https?:\/\/\S+/gi, '[url]').slice(0, 200) : '';
+    throw new Error(`Creating property image URL failed${detail ? `: ${detail}` : ''}`);
+  }
+  return data.signedUrl;
 }
 
 export function createPropertySource({ config, client, fallback, publicImageUrl } = {}) {

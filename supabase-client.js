@@ -7,7 +7,16 @@ export function readSupabaseConfig(config = globalThis.TAMARA_SUPABASE_CONFIG) {
 
 export function hasSupabaseConfig(config) {
   const normalized = readSupabaseConfig(config);
-  return Boolean(normalized.url && normalized.publishableKey);
+  try {
+    const parsedUrl = new URL(normalized.url);
+    return Boolean(
+      normalized.publishableKey
+      && (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:')
+      && parsedUrl.hostname,
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function createSupabaseClient({ config, factory } = {}) {

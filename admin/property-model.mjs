@@ -30,7 +30,7 @@ export function normalizePropertyRow(row, imageRows = []) {
     .sort((left, right) => Number(left.sort_order) - Number(right.sort_order))
     .map((image) => image.storage_path);
 
-  return {
+  const property = {
     ...row,
     features: row.features ?? [],
     description: row.description ?? '',
@@ -38,6 +38,17 @@ export function normalizePropertyRow(row, imageRows = []) {
     price: formatCentsAsPrice(row.price_cents),
     images: orderedImages,
   };
+
+  for (const [legacyField, databaseField] of [
+    ['isNew', 'is_new'],
+    ['sourceUrl', 'source_url'],
+  ]) {
+    const value = row[databaseField] ?? row[legacyField];
+    if (value !== undefined) property[legacyField] = value;
+  }
+  if (row.purpose !== undefined) property.purpose = row.purpose;
+
+  return property;
 }
 
 export function toLegacyProperty(property) {
@@ -54,8 +65,13 @@ export function toLegacyProperty(property) {
     proximidades: property.proximidades ?? [],
   };
 
-  for (const field of ['isNew', 'purpose', 'sourceUrl']) {
-    if (property[field] !== undefined) legacyProperty[field] = property[field];
+  for (const [legacyField, databaseField] of [
+    ['isNew', 'is_new'],
+    ['purpose', 'purpose'],
+    ['sourceUrl', 'source_url'],
+  ]) {
+    const value = property[legacyField] ?? property[databaseField];
+    if (value !== undefined) legacyProperty[legacyField] = value;
   }
 
   return legacyProperty;

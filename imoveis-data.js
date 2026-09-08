@@ -577,3 +577,5 @@ const IMOVEIS_DATA = [
     "sourceUrl": "https://www.infoimoveis.com.br/imovel/aluguel-imovel-comercial-ms-campo-grande-monte-castelo/698182"
   }
 ];
+
+if (typeof window !== 'undefined') window.IMOVEIS_DATA = IMOVEIS_DATA;

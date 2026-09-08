@@ -173,14 +173,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initial render keeps the static inventory visible while the optional remote request is pending.
     renderProperties(IMOVEIS_DATA);
 
-    if (typeof window.loadPublicProperties === "function") {
-        const remoteProperties = await window.loadPublicProperties({ fallback: IMOVEIS_DATA });
-        if (Array.isArray(remoteProperties) && remoteProperties !== IMOVEIS_DATA) {
-            IMOVEIS_DATA.splice(0, IMOVEIS_DATA.length, ...remoteProperties);
-            renderProperties(IMOVEIS_DATA);
-        }
-    }
-
     // Share function
     window.shareImovel = function(e, id) {
         if (e) e.stopPropagation();
@@ -311,5 +303,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             void mainImg.offsetWidth;
             mainImg.classList.add("fade-in");
         }
+    }
+
+    if (typeof window.loadPublicProperties === "function") {
+        Promise.resolve()
+            .then(() => window.loadPublicProperties({ fallback: IMOVEIS_DATA }))
+            .then((remoteProperties) => {
+                if (Array.isArray(remoteProperties) && remoteProperties !== IMOVEIS_DATA) {
+                    IMOVEIS_DATA.splice(0, IMOVEIS_DATA.length, ...remoteProperties);
+                    applyFilters();
+                }
+            })
+            .catch(() => {});
     }
 });

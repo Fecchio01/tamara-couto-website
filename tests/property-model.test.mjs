@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
 import {
   normalizePropertyRow,
   toLegacyProperty,
@@ -117,4 +119,206 @@ test('repository maps published rows and storage paths to the public property sh
     ],
     proximidades: [],
   }]);
+});
+
+test('maps optional inventory fields from database rows to the legacy shape', () => {
+  const property = normalizePropertyRow({
+    id: 'p-optional',
+    title: 'Galpão',
+    type: 'Imóvel Comercial',
+    price_cents: 1800000,
+    is_new: true,
+    purpose: 'Aluguel',
+    source_url: 'https://example.test/source',
+    proximidades: ['Mercado'],
+  });
+
+  assert.equal(property.isNew, true);
+  assert.equal(property.purpose, 'Aluguel');
+  assert.equal(property.sourceUrl, 'https://example.test/source');
+  assert.deepEqual(toLegacyProperty(property), {
+    id: 'p-optional',
+    title: 'Galpão',
+    type: 'Imóvel Comercial',
+    location: '',
+    neighborhood: '',
+    price: 'R$ 18.000,00',
+    features: [],
+    description: '',
+    images: [],
+    proximidades: ['Mercado'],
+    isNew: true,
+    purpose: 'Aluguel',
+    sourceUrl: 'https://example.test/source',
+  });
+});
+
+test('uses signed URLs for private property images', async () => {
+  const query = {
+    select() { return this; },
+    eq() { return this; },
+    order() {
+      return Promise.resolve({
+        data: [{
+          id: 'p-private',
+          title: 'Casa privada',
+          type: 'Casa',
+          price_cents: 100,
+          status: 'published',
+          property_images: [{ storage_path: 'properties/p-private/home.jpg', sort_order: 0 }],
+        }],
+        error: null,
+      });
+    },
+  };
+  const repository = createPropertyRepository({
+    client: {
+      from() { return query; },
+      storage: {
+        from() {
+          return {
+            createSignedUrl: async (path, expiresIn) => ({
+              data: { signedUrl: `signed:${path}:${expiresIn}` },
+              error: null,
+            }),
+          };
+        },
+      },
+    },
+  });
+
+  const [property] = await repository.listPublished();
+  assert.equal(property.images[0], 'signed:properties/p-private/home.jpg:3600');
+});
+
+test('returns fallback without querying for malformed configuration', async () => {
+  let queryCount = 0;
+  const fallback = [{ id: 'malformed-config-fallback' }];
+  const source = createPropertySource({
+    config: { url: 'not a URL', publishableKey: 'key' },
+    client: { from() { queryCount += 1; return {}; } },
+    fallback,
+  });
+
+  assert.deepEqual(await source.loadPublicProperties(), fallback);
+  assert.equal(queryCount, 0);
+});
+
+test('uses the browser global static array when no fallback argument is provided', async () => {
+  const fallback = [{ id: 'browser-global-fallback' }];
+  const previousWindow = globalThis.window;
+  globalThis.window = { IMOVEIS_DATA: fallback };
+  try {
+    const source = createPropertySource({ config: {} });
+    assert.deepEqual(await source.loadPublicProperties(), fallback);
+  } finally {
+    globalThis.window = previousWindow;
+  }
+});
+
+test('exposes the static inventory on window for browser consumers', () => {
+  const dataScript = fs.readFileSync(new URL('../imoveis-data.js', import.meta.url), 'utf8');
+  const sandbox = { window: {} };
+  vm.runInNewContext(dataScript, sandbox);
+  assert.ok(Array.isArray(sandbox.window.IMOVEIS_DATA));
+});
+
+test('initializes public handlers before a pending remote request resolves', async () => {
+  let domReady;
+  const listeners = {};
+  const element = {
+    addEventListener() {},
+    querySelector() { return null; },
+    querySelectorAll() { return []; },
+    setAttribute() {},
+    getAttribute() { return '0'; },
+    classList: { add() {}, remove() {}, toggle() {} },
+    style: {},
+  };
+  const document = {
+    addEventListener(name, handler) {
+      listeners[name] = handler;
+      if (name === 'DOMContentLoaded') domReady = handler;
+    },
+    querySelector(selector) {
+      return selector === '.properties-grid' ? {
+        ...element,
+        insertAdjacentHTML() {},
+        innerHTML: '',
+      } : element;
+    },
+    querySelectorAll() { return []; },
+    getElementById() { return element; },
+    dispatchEvent() {},
+  };
+  let resolveRemote;
+  const remoteRequest = new Promise((resolve) => { resolveRemote = resolve; });
+  const sandbox = {
+    document,
+    window: { loadPublicProperties: () => remoteRequest },
+    IMOVEIS_DATA: [{ id: 'first-paint', title: 'Casa', type: 'Casa', price: 'R$ 1', images: ['one.jpg'], features: [] }],
+    Event,
+    navigator: {},
+    setTimeout,
+    encodeURIComponent,
+  };
+  vm.runInNewContext(fs.readFileSync(new URL('../imoveis-ui.js', import.meta.url), 'utf8'), sandbox);
+
+  const run = domReady();
+  await Promise.resolve();
+  assert.equal(typeof sandbox.window.shareImovel, 'function');
+  resolveRemote(sandbox.IMOVEIS_DATA);
+  await run;
+});
+
+test('removes property storage objects before deleting the property', async () => {
+  const calls = [];
+  const imageQuery = {
+    select() { return this; },
+    eq() {
+      return Promise.resolve({
+        data: [{ storage_path: 'properties/p-remove/a.jpg' }, { storage_path: 'properties/p-remove/b.jpg' }],
+        error: null,
+      });
+    },
+  };
+  const propertyQuery = {
+    delete() { calls.push('property-delete'); return this; },
+    eq() { return Promise.resolve({ data: [], error: null }); },
+  };
+  const storage = {
+    remove(paths) {
+      calls.push(['storage-remove', paths]);
+      return Promise.resolve({ data: paths, error: null });
+    },
+  };
+  const repository = createPropertyRepository({
+    client: {
+      from(table) {
+        if (table === 'property_images') return imageQuery;
+        if (table === 'properties') return propertyQuery;
+        throw new Error(`unexpected table ${table}`);
+      },
+      storage: { from() { return storage; } },
+    },
+  });
+
+  await repository.remove('p-remove');
+  assert.deepEqual(calls, [
+    ['storage-remove', ['properties/p-remove/a.jpg', 'properties/p-remove/b.jpg']],
+    'property-delete',
+  ]);
+});
+
+test('preserves safe provider error code and message', async () => {
+  const query = {
+    select() { return this; },
+    eq() { return this; },
+    order() {
+      return Promise.resolve({ data: null, error: { code: 'PGRST116', message: 'No rows found' } });
+    },
+  };
+  const repository = createPropertyRepository({ client: { from() { return query; } } });
+
+  await assert.rejects(repository.listPublished(), /Loading published properties failed: PGRST116: No rows found/);
 });
