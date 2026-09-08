@@ -7,6 +7,8 @@ import {
   loadStaticProperties,
   buildPropertyUpsert,
   buildImageUploadPlan,
+  filterProperties,
+  importProperties,
 } from '../scripts/import-static-properties.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -85,6 +87,69 @@ test('importer builds deterministic image paths from repository-relative files',
   assert.equal(fs.existsSync(firstPlan[0].sourcePath), true);
 });
 
+test('importer rejects dot segments in legacy ids and image paths', () => {
+  assert.throws(
+    () => buildImageUploadPlan({ id: '..', images: [] }, repositoryRoot),
+    /reserved path segment/,
+  );
+  assert.throws(
+    () => buildImageUploadPlan({ id: '665313', images: ['assets/./foto.jpg'] }, repositoryRoot),
+    /reserved path segment/,
+  );
+  assert.throws(
+    () => buildImageUploadPlan({ id: '665313', images: ['..'] }, repositoryRoot),
+    /reserved path segment/,
+  );
+});
+
+test('importer prioritizes legacy_id when filtering a property', () => {
+  const property = { id: 'database-uuid', legacy_id: '665313', title: 'Casa' };
+
+  assert.deepEqual(filterProperties([property], '665313'), [property]);
+  assert.deepEqual(filterProperties([property], 'database-uuid'), []);
+});
+
+test('replace-images deletes obsolete metadata and storage objects', async () => {
+  const requests = [];
+  const fetchImpl = async (url, init = {}) => {
+    requests.push({ url, method: init.method ?? 'GET', body: init.body });
+    if (url.includes('/rest/v1/properties?')) {
+      return response([{ id: 'database-uuid', legacy_id: '665313' }]);
+    }
+    if (url.includes('/rest/v1/property_images?property_id=')) {
+      return response([
+        { id: 'old-image', storage_path: 'properties/665313/old.jpg' },
+        { id: 'kept-image', storage_path: 'properties/665313/000-foto-0.jpg' },
+      ]);
+    }
+    if (url.includes('/rest/v1/property_images?on_conflict=')) {
+      return response([{}]);
+    }
+    return response({});
+  };
+
+  await importProperties([{
+    id: '665313',
+    title: 'Casa',
+    type: 'Casa',
+    price: 'R$ 1.000',
+    images: ['assets/imoveis/imovel-0/foto-0.jpg'],
+  }], {
+    repositoryRoot,
+    url: 'https://supabase.example.test',
+    serviceRoleKey: 'test-only-secret',
+    replaceImages: true,
+    fetchImpl,
+    output: () => {},
+  });
+
+  const deleted = requests.filter((request) => request.method === 'DELETE');
+  assert.deepEqual(deleted.map((request) => [request.method, request.url]), [
+    ['DELETE', 'https://supabase.example.test/rest/v1/property_images?id=eq.old-image'],
+    ['DELETE', 'https://supabase.example.test/storage/v1/object/property-images/properties/665313/old.jpg'],
+  ]);
+});
+
 test('importer dry-run reports the inventory without requiring Supabase credentials', async () => {
   const { spawn } = await import('node:child_process');
   const output = await new Promise((resolve, reject) => {
@@ -107,3 +172,13 @@ test('importer dry-run reports the inventory without requiring Supabase credenti
   assert.match(output.stdout, /665313/);
   assert.doesNotMatch(output.stdout, /SUPABASE_SERVICE_ROLE_KEY|service_role/i);
 });
+
+function response(data) {
+  return {
+    ok: true,
+    status: 200,
+    async json() {
+      return data;
+    },
+  };
+}

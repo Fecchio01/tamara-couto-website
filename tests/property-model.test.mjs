@@ -520,6 +520,30 @@ test('preserves safe provider error code and message', async () => {
   await assert.rejects(repository.listPublished(), /Loading published properties failed: PGRST116: No rows found/);
 });
 
+test('redacts service role secrets from provider error details', async () => {
+  const query = {
+    select() { return this; },
+    eq() { return this; },
+    order() {
+      return Promise.resolve({
+        data: null,
+        error: { message: 'service_role=do-not-leak-this-value' },
+      });
+    },
+  };
+  const repository = createPropertyRepository({ client: { from() { return query; } } });
+
+  await assert.rejects(
+    repository.listPublished(),
+    (error) => {
+      assert.match(error.message, /Loading published properties failed/);
+      assert.doesNotMatch(error.message, /do-not-leak-this-value/);
+      assert.match(error.message, /\[redacted\]/);
+      return true;
+    },
+  );
+});
+
 test('reorders property images through repository metadata updates', async () => {
   const calls = [];
   const imageQuery = {

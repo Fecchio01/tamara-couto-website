@@ -16,7 +16,7 @@ function safeProviderDetail(error) {
   const message = typeof error?.message === 'string'
     ? error.message
       .replace(/https?:\/\/\S+/gi, '[url]')
-      .replace(/(?:publishable(?:Key)?|api[_-]?key|access[_-]?token|token)=\S+/gi, '[redacted]')
+      .replace(/(?:service_role|publishable(?:Key)?|api[_-]?key|access[_-]?token|token)=\S+/gi, '[redacted]')
       .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 200)

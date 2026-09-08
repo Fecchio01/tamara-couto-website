@@ -79,6 +79,13 @@ function safePathSegment(value, fallback) {
   return segment || fallback;
 }
 
+function rejectReservedPathSegments(value, label) {
+  const segments = String(value).replaceAll('\\', '/').split('/');
+  if (segments.some((segment) => segment === '.' || segment === '..')) {
+    throw new Error(`${label} contains reserved path segment`);
+  }
+}
+
 function safeFileName(value, fallback) {
   const baseName = path.posix.basename(String(value ?? '').replaceAll('\\', '/'));
   return safePathSegment(baseName, fallback).toLowerCase();
@@ -90,16 +97,22 @@ export function buildImageUploadPlan(property = {}, repositoryRoot = REPOSITORY_
   if (legacyId === undefined || legacyId === null || String(legacyId).trim() === '') {
     throw new Error('Static property is missing its legacy id');
   }
+  rejectReservedPathSegments(legacyId, 'Legacy id');
 
   const root = path.resolve(repositoryRoot);
   const idSegment = safePathSegment(legacyId, 'property');
   return asArray(property.images).map((image, sortOrder) => {
     const relativePath = String(image ?? '').trim();
     if (!relativePath) throw new Error(`Property ${legacyId} has an empty image path`);
+    rejectReservedPathSegments(relativePath, 'Image path');
 
     const sourcePath = path.resolve(root, relativePath);
     const relativeSourcePath = path.relative(root, sourcePath);
-    if (relativeSourcePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativeSourcePath)) {
+    if (
+      relativeSourcePath === '..'
+      || relativeSourcePath.startsWith(`..${path.sep}`)
+      || path.isAbsolute(relativeSourcePath)
+    ) {
       throw new Error(`Image path escapes repository root: ${relativePath}`);
     }
 
@@ -141,9 +154,9 @@ function parseArgs(argv) {
   return options;
 }
 
-function filterProperties(properties, legacyId) {
+export function filterProperties(properties, legacyId) {
   if (!legacyId) return properties;
-  return properties.filter((property) => String(property.id ?? property.legacy_id) === String(legacyId));
+  return properties.filter((property) => String(property.legacy_id ?? property.id) === String(legacyId));
 }
 
 function buildDryRunRecord(property, repositoryRoot) {
@@ -221,6 +234,17 @@ function createSupabaseRestClient({ url, serviceRoleKey, fetchImpl = globalThis.
     async listImages(propertyId) {
       return request(`/rest/v1/property_images?property_id=eq.${encodeURIComponent(propertyId)}&select=id,storage_path`);
     },
+    async deleteImageRecord(imageId) {
+      await request(`/rest/v1/property_images?id=eq.${encodeURIComponent(imageId)}`, {
+        method: 'DELETE',
+        headers: { Prefer: 'return=minimal' },
+      });
+    },
+    async deleteObject(storagePath) {
+      await request(`/storage/v1/object/${IMAGE_BUCKET}/${encodePath(storagePath)}`, {
+        method: 'DELETE',
+      });
+    },
     async uploadObject(storagePath, contents, contentType, replaceImages) {
       await request(`/storage/v1/object/${IMAGE_BUCKET}/${encodePath(storagePath)}`, {
         method: 'POST',
@@ -258,8 +282,16 @@ export async function importProperties(properties, {
   for (const property of properties) {
     const row = await client.upsertProperty(buildPropertyUpsert(property));
     const plans = buildImageUploadPlan(property, repositoryRoot);
-    const existingImages = replaceImages ? [] : await client.listImages(row.id);
+    const existingImages = await client.listImages(row.id);
     const existingPaths = new Set((existingImages ?? []).map((image) => image.storage_path));
+    if (replaceImages) {
+      const plannedPaths = new Set(plans.map((plan) => plan.storagePath));
+      for (const image of existingImages ?? []) {
+        if (plannedPaths.has(image.storage_path)) continue;
+        await client.deleteImageRecord(image.id);
+        await client.deleteObject(image.storage_path);
+      }
+    }
 
     for (const plan of plans) {
       if (!replaceImages && existingPaths.has(plan.storagePath)) continue;
