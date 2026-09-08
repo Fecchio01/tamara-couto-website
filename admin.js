@@ -22,6 +22,13 @@ export class AdminAuthError extends Error {
   }
 }
 
+export function deferAuthSync(sync) {
+  const schedule = typeof globalThis.queueMicrotask === 'function'
+    ? globalThis.queueMicrotask
+    : (callback) => globalThis.setTimeout(callback, 0);
+  schedule(() => { void sync(); });
+}
+
 function createConfiguredError() {
   return new AdminAuthError('AUTH_UNAVAILABLE');
 }
@@ -128,6 +135,8 @@ function getPageElements(root = globalThis.document) {
     denied: root.getElementById('deniedState'),
     dashboard: root.getElementById('dashboardState'),
     loginMessage: root.getElementById('loginMessage'),
+    loadingMessage: root.getElementById('loadingMessage'),
+    dashboardMessage: root.getElementById('dashboardMessage'),
     loginButton: root.getElementById('loginButton'),
     userLabel: root.getElementById('adminUserLabel'),
   };
@@ -152,6 +161,14 @@ export function renderAdminState(state, root = globalThis.document) {
   if (elements.loginMessage) {
     elements.loginMessage.textContent = active === 'signed-out' ? message : '';
     elements.loginMessage.dataset.tone = message ? 'error' : '';
+  }
+  if (elements.loadingMessage) {
+    elements.loadingMessage.textContent = active === 'loading' ? message : '';
+    elements.loadingMessage.dataset.tone = message ? 'error' : '';
+  }
+  if (elements.dashboardMessage) {
+    elements.dashboardMessage.textContent = active === 'admin' ? message : '';
+    elements.dashboardMessage.dataset.tone = message ? 'error' : '';
   }
   if (elements.loginButton) elements.loginButton.disabled = active === 'loading';
   if (elements.userLabel && active === 'admin') {
@@ -205,28 +222,38 @@ export async function initializeAdmin({ client } = {}) {
 
   pageController = createAdminAuth({
     client: resolvedClient,
-    onAuthChange: () => { void syncAdminState(); },
+    onAuthChange: () => deferAuthSync(syncAdminState),
   });
   const elements = getPageElements(root);
   const loginForm = root.getElementById('loginForm');
   const logoutButton = root.getElementById('logoutButton');
   const deniedBackButton = root.getElementById('deniedBackButton');
+  let currentState = { kind: 'loading' };
+
+  function showState(state) {
+    currentState = state;
+    renderAdminState(state, root);
+  }
 
   async function syncAdminState() {
     if (pageSync) return pageSync;
     pageSync = (async () => {
-      renderAdminState({ kind: 'loading' }, root);
+      showState({ kind: 'loading' });
       try {
         const user = await pageController.requireAdminSession();
-        renderAdminState({ kind: 'admin', user }, root);
+        showState({ kind: 'admin', user });
       } catch (error) {
         if (error?.code === 'NOT_ADMIN') {
-          try { await pageController.signOut(); } catch { /* Keep the denial generic. */ }
-          renderAdminState({ kind: 'denied' }, root);
+          try {
+            await pageController.signOut();
+            showState({ kind: 'denied' });
+          } catch {
+            showState({ ...currentState, message: SAFE_MESSAGES.SIGN_OUT_FAILED });
+          }
         } else if (error?.code === 'SIGNED_OUT') {
-          renderAdminState({ kind: 'signed-out' }, root);
+          showState({ kind: 'signed-out' });
         } else {
-          renderAdminState({ kind: 'signed-out', message: SAFE_MESSAGES.SESSION_CHECK_FAILED }, root);
+          showState({ kind: 'signed-out', message: SAFE_MESSAGES.SESSION_CHECK_FAILED });
         }
       } finally {
         pageSync = null;
@@ -240,12 +267,12 @@ export async function initializeAdmin({ client } = {}) {
       event.preventDefault();
       const formData = new FormData(loginForm);
       try {
-        renderAdminState({ kind: 'loading' }, root);
+        showState({ kind: 'loading' });
         await pageController.signIn(formData.get('email'), formData.get('password'));
         loginForm.reset();
         await syncAdminState();
       } catch (error) {
-        renderAdminState({
+        showState({
           kind: 'signed-out',
           message: error?.code === 'AUTH_UNAVAILABLE'
             ? SAFE_MESSAGES.AUTH_UNAVAILABLE
@@ -258,14 +285,19 @@ export async function initializeAdmin({ client } = {}) {
   if (logoutButton) {
     logoutButton.addEventListener('click', async () => {
       logoutButton.disabled = true;
-      try { await pageController.signOut(); } catch { /* The next state remains generic. */ }
-      renderAdminState({ kind: 'signed-out' }, root);
-      logoutButton.disabled = false;
+      try {
+        await pageController.signOut();
+        showState({ kind: 'signed-out' });
+      } catch {
+        showState({ ...currentState, message: SAFE_MESSAGES.SIGN_OUT_FAILED });
+      } finally {
+        logoutButton.disabled = false;
+      }
     });
   }
 
   if (deniedBackButton) {
-    deniedBackButton.addEventListener('click', () => renderAdminState({ kind: 'signed-out' }, root));
+    deniedBackButton.addEventListener('click', () => showState({ kind: 'signed-out' }));
   }
 
   pageController.subscribe();
