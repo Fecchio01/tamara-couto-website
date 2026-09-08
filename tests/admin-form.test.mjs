@@ -113,3 +113,23 @@ test('allows a draft with no price while published records still require title a
   assert.equal(validatePropertyInput({ title: 'Rascunho', type: 'Casa', status: 'draft', price: '' }).valid, true);
   assert.deepEqual(validatePropertyInput({ title: '', type: '', status: 'published' }).errors, ['title', 'type']);
 });
+
+test('reads blank optional fields as null without changing draft price behavior', () => {
+  const form = createForm({
+    title: 'Casa', type: 'Casa', neighborhood: '', location: '', price: '', description: '',
+    features: '', latitude: '', longitude: '', mapUrl: '', legacy_id: '', isNew: { checked: false },
+    purpose: '', sourceUrl: '', proximidades: '', status: 'draft',
+  });
+  const input = readPropertyForm(form);
+
+  assert.equal(input.neighborhood, null);
+  assert.equal(input.location, null);
+  assert.equal(input.latitude, null);
+  assert.equal(input.longitude, null);
+  assert.equal(input.mapUrl, null);
+  assert.equal(input.legacy_id, null);
+  assert.equal(input.purpose, null);
+  assert.equal(input.sourceUrl, null);
+  assert.equal(input.price, '');
+  assert.equal(input.price_cents, 0);
+});

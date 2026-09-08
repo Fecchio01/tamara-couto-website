@@ -9,7 +9,7 @@ import {
   parsePriceToCents,
 } from '../admin/property-model.mjs';
 import { createPropertySource } from '../property-source.js';
-import { createPropertyRepository } from '../property-repository.js';
+import { createPropertyRepository, inputToPayload } from '../property-repository.js';
 
 test('normalizes a database property and its ordered images', () => {
   const property = normalizePropertyRow(
@@ -228,6 +228,7 @@ test('initializes public handlers before a pending remote request resolves', asy
   const listeners = {};
   const element = {
     addEventListener() {},
+    replaceChildren() {},
     querySelector() { return null; },
     querySelectorAll() { return []; },
     setAttribute() {},
@@ -554,4 +555,71 @@ test('reorders property images through repository metadata updates', async () =>
     { payload: { sort_order: 1 }, column: 'id', value: 'image-a' },
     { payload: { sort_order: 1 }, column: 'property_id', value: 'property-1' },
   ]);
+});
+
+test('normalizes blank optional form values to database nulls', () => {
+  assert.deepEqual(inputToPayload({
+    title: 'Casa segura',
+    type: 'Casa',
+    legacy_id: '   ',
+    location: ' ',
+    neighborhood: '',
+    latitude: '',
+    longitude: '  ',
+    mapUrl: '',
+    purpose: '',
+    sourceUrl: ' ',
+    description: '',
+    features: [],
+    proximidades: [],
+    status: 'draft',
+  }), {
+    legacy_id: null,
+    title: 'Casa segura',
+    type: 'Casa',
+    location: null,
+    neighborhood: null,
+    price_cents: 0,
+    features: [],
+    is_new: null,
+    purpose: null,
+    source_url: null,
+    proximidades: [],
+    description: '',
+    latitude: null,
+    longitude: null,
+    map_url: null,
+    status: 'draft',
+  });
+});
+
+test('repository CRUD sends normalized optional values to Supabase', async () => {
+  let capturedPayload;
+  const query = {
+    insert(payload) {
+      capturedPayload = payload;
+      return {
+        select() {
+          return {
+            single: async () => ({
+              data: { id: 'property-optional', ...payload, property_images: [] },
+              error: null,
+            }),
+          };
+        },
+      };
+    },
+  };
+  const repository = createPropertyRepository({
+    client: { from(table) { assert.equal(table, 'properties'); return query; } },
+    publicImageUrl: (path) => path,
+  });
+
+  await repository.save({ title: 'Casa segura', type: 'Casa', legacy_id: '', latitude: '', longitude: '', mapUrl: '', sourceUrl: '' });
+
+  assert.equal(capturedPayload.legacy_id, null);
+  assert.equal(capturedPayload.latitude, null);
+  assert.equal(capturedPayload.longitude, null);
+  assert.equal(capturedPayload.map_url, null);
+  assert.equal(capturedPayload.source_url, null);
 });

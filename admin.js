@@ -6,6 +6,7 @@ import {
 import { createPropertyRepository } from './property-repository.js';
 import {
   formatCentsAsPrice,
+  nullIfBlank,
   parsePriceToCents,
   validatePropertyInput,
 } from './admin/property-model.mjs';
@@ -61,19 +62,19 @@ export function readPropertyForm(form = globalThis.document?.getElementById('pro
   return {
     title: readField(form, 'title').trim(),
     type: readField(form, 'type').trim(),
-    neighborhood: readField(form, 'neighborhood').trim(),
-    location: readField(form, 'location').trim(),
+    neighborhood: nullIfBlank(readField(form, 'neighborhood').trim()),
+    location: nullIfBlank(readField(form, 'location').trim()),
     price,
     price_cents: parsePriceToCents(price),
     description: readField(form, 'description'),
     features: splitFormList(readField(form, 'features')),
-    latitude: readField(form, 'latitude').trim(),
-    longitude: readField(form, 'longitude').trim(),
-    mapUrl: readField(form, 'mapUrl', 'map_url').trim(),
-    legacy_id: readField(form, 'legacy_id').trim(),
+    latitude: nullIfBlank(readField(form, 'latitude').trim()),
+    longitude: nullIfBlank(readField(form, 'longitude').trim()),
+    mapUrl: nullIfBlank(readField(form, 'mapUrl', 'map_url').trim()),
+    legacy_id: nullIfBlank(readField(form, 'legacy_id').trim()),
     isNew: readChecked(form, 'isNew', 'is_new'),
-    purpose: readField(form, 'purpose').trim(),
-    sourceUrl: readField(form, 'sourceUrl', 'source_url').trim(),
+    purpose: nullIfBlank(readField(form, 'purpose').trim()),
+    sourceUrl: nullIfBlank(readField(form, 'sourceUrl', 'source_url').trim()),
     proximidades: splitFormList(readField(form, 'proximidades')),
     status: readField(form, 'status') || 'draft',
   };

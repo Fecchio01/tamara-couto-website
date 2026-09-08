@@ -1,6 +1,8 @@
 import {
   normalizePropertyRow,
+  nullIfBlank,
   parsePriceToCents,
+  parseOptionalNumber,
   toLegacyProperty,
   validatePropertyInput,
 } from './admin/property-model.mjs';
@@ -77,23 +79,27 @@ async function normalizeLegacyProperty(row, publicImageUrl) {
   return toLegacyProperty(await normalizeProperty(row, publicImageUrl));
 }
 
-function inputToPayload(input = {}) {
+export function inputToPayload(input = {}) {
+  const isNew = input.is_new ?? input.isNew;
+  const priceCents = input.price_cents === undefined || input.price_cents === null || input.price_cents === ''
+    ? parsePriceToCents(input.price)
+    : Number(input.price_cents);
   return {
-    legacy_id: input.legacy_id ?? input.legacyId ?? null,
+    legacy_id: nullIfBlank(input.legacy_id ?? input.legacyId),
     title: String(input.title ?? '').trim(),
     type: String(input.type ?? '').trim(),
-    location: input.location ?? '',
-    neighborhood: input.neighborhood ?? '',
-    price_cents: input.price_cents ?? parsePriceToCents(input.price),
+    location: nullIfBlank(input.location),
+    neighborhood: nullIfBlank(input.neighborhood),
+    price_cents: Number.isFinite(priceCents) ? priceCents : 0,
     features: Array.isArray(input.features) ? input.features : [],
-    is_new: input.is_new ?? input.isNew ?? null,
-    purpose: input.purpose ?? null,
-    source_url: input.source_url ?? input.sourceUrl ?? null,
+    is_new: isNew === undefined || isNew === null ? null : Boolean(isNew),
+    purpose: nullIfBlank(input.purpose),
+    source_url: nullIfBlank(input.source_url ?? input.sourceUrl),
     proximidades: Array.isArray(input.proximidades) ? input.proximidades : [],
     description: input.description ?? '',
-    latitude: input.latitude ?? null,
-    longitude: input.longitude ?? null,
-    map_url: input.map_url ?? input.mapUrl ?? null,
+    latitude: parseOptionalNumber(input.latitude),
+    longitude: parseOptionalNumber(input.longitude),
+    map_url: nullIfBlank(input.map_url ?? input.mapUrl),
     status: input.status ?? 'draft',
   };
 }

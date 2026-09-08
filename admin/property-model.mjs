@@ -1,5 +1,17 @@
 const REQUIRED_PROPERTY_FIELDS = ['title', 'type'];
 
+export function nullIfBlank(value) {
+  if (value === undefined || value === null) return null;
+  return typeof value === 'string' && value.trim() === '' ? null : value;
+}
+
+export function parseOptionalNumber(value) {
+  const normalized = nullIfBlank(value);
+  if (normalized === null) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export function parsePriceToCents(value) {
   if (typeof value === 'number') {
     return Math.round(value * 100);
