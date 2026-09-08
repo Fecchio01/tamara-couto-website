@@ -150,6 +150,39 @@ test('replace-images deletes obsolete metadata and storage objects', async () =>
   ]);
 });
 
+test('replace-images preflight rejects ENOENT before deleting old images', async () => {
+  const requests = [];
+  const fetchImpl = async (url, init = {}) => {
+    requests.push({ url, method: init.method ?? 'GET' });
+    if (url.includes('/rest/v1/properties?')) {
+      return response([{ id: 'database-uuid', legacy_id: '665313' }]);
+    }
+    if (url.includes('/rest/v1/property_images?property_id=')) {
+      return response([{ id: 'old-image', storage_path: 'properties/665313/old.jpg' }]);
+    }
+    return response({});
+  };
+
+  await assert.rejects(
+    importProperties([{
+      id: '665313',
+      title: 'Casa',
+      type: 'Casa',
+      images: ['assets/imoveis/imovel-0/file-does-not-exist.jpg'],
+    }], {
+      repositoryRoot,
+      url: 'https://supabase.example.test',
+      serviceRoleKey: 'test-only-secret',
+      replaceImages: true,
+      fetchImpl,
+      output: () => {},
+    }),
+    (error) => error?.code === 'ENOENT',
+  );
+
+  assert.deepEqual(requests.filter((request) => request.method === 'DELETE'), []);
+});
+
 test('importer dry-run reports the inventory without requiring Supabase credentials', async () => {
   const { spawn } = await import('node:child_process');
   const output = await new Promise((resolve, reject) => {

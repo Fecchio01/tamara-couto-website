@@ -197,6 +197,33 @@ function mimeTypeFor(filePath) {
   }[extension] ?? 'application/octet-stream';
 }
 
+function preflightImagePlans(plans) {
+  return plans.map((plan) => {
+    const contentType = mimeTypeFor(plan.sourcePath);
+    if (contentType === 'application/octet-stream') {
+      const error = new Error(`Unsupported image MIME type: ${plan.sourcePath}`);
+      error.code = 'UNSUPPORTED_IMAGE_MIME';
+      throw error;
+    }
+
+    const stats = fs.statSync(plan.sourcePath);
+    if (!stats.isFile()) {
+      const error = new Error(`Image path is not a file: ${plan.sourcePath}`);
+      error.code = 'INVALID_IMAGE_FILE';
+      throw error;
+    }
+
+    const contents = fs.readFileSync(plan.sourcePath);
+    if (contents.length === 0) {
+      const error = new Error(`Image file is empty: ${plan.sourcePath}`);
+      error.code = 'EMPTY_IMAGE_FILE';
+      throw error;
+    }
+
+    return { ...plan, contents, contentType };
+  });
+}
+
 function createSupabaseRestClient({ url, serviceRoleKey, fetchImpl = globalThis.fetch }) {
   if (typeof fetchImpl !== 'function') throw new Error('Node fetch is unavailable');
   const baseUrl = url.replace(/\/$/, '');
@@ -280,12 +307,13 @@ export async function importProperties(properties, {
   let imageCount = 0;
 
   for (const property of properties) {
-    const row = await client.upsertProperty(buildPropertyUpsert(property));
     const plans = buildImageUploadPlan(property, repositoryRoot);
+    const preparedPlans = preflightImagePlans(plans);
+    const row = await client.upsertProperty(buildPropertyUpsert(property));
     const existingImages = await client.listImages(row.id);
     const existingPaths = new Set((existingImages ?? []).map((image) => image.storage_path));
     if (replaceImages) {
-      const plannedPaths = new Set(plans.map((plan) => plan.storagePath));
+      const plannedPaths = new Set(preparedPlans.map((plan) => plan.storagePath));
       for (const image of existingImages ?? []) {
         if (plannedPaths.has(image.storage_path)) continue;
         await client.deleteImageRecord(image.id);
@@ -293,10 +321,9 @@ export async function importProperties(properties, {
       }
     }
 
-    for (const plan of plans) {
+    for (const plan of preparedPlans) {
       if (!replaceImages && existingPaths.has(plan.storagePath)) continue;
-      const contents = fs.readFileSync(plan.sourcePath);
-      await client.uploadObject(plan.storagePath, contents, mimeTypeFor(plan.sourcePath), replaceImages);
+      await client.uploadObject(plan.storagePath, plan.contents, plan.contentType, replaceImages);
       await client.upsertImage({
         property_id: row.id,
         storage_path: plan.storagePath,
@@ -305,7 +332,7 @@ export async function importProperties(properties, {
       });
       imageCount += 1;
     }
-    output(`Imported ${row.legacy_id ?? property.id} (${plans.length} images planned)`);
+    output(`Imported ${row.legacy_id ?? property.id} (${preparedPlans.length} images planned)`);
   }
 
   return { propertyCount: properties.length, imageCount };
