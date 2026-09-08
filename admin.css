@@ -1,0 +1,121 @@
+:root {
+    --admin-ink: #1f2926;
+    --admin-muted: #6e7772;
+    --admin-line: #dfe5e1;
+    --admin-paper: #f6f8f6;
+    --admin-card: #ffffff;
+    --admin-primary: #315c4c;
+    --admin-primary-dark: #24483b;
+    --admin-accent: #c8a56a;
+    --admin-danger: #a74d45;
+    font-family: Montserrat, "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    color: var(--admin-ink);
+    background:
+        radial-gradient(circle at top right, rgba(200, 165, 106, 0.12), transparent 30rem),
+        var(--admin-paper);
+}
+
+button, input { font: inherit; }
+
+.admin-shell {
+    width: min(100% - 2rem, 70rem);
+    margin: 0 auto;
+    padding: 1.25rem 0 4rem;
+}
+
+.admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0 2.5rem;
+}
+
+.admin-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--admin-ink);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-decoration: none;
+}
+
+.admin-brand small {
+    display: block;
+    margin-top: 0.3rem;
+    color: var(--admin-accent);
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+}
+
+.admin-brand-mark { width: 2rem; height: 2rem; object-fit: contain; }
+.admin-header-note { color: var(--admin-muted); font-size: 0.75rem; }
+
+.state-card, .dashboard {
+    width: min(100%, 46rem);
+    margin: 4vh auto 0;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    background: var(--admin-card);
+    border: 1px solid var(--admin-line);
+    box-shadow: 0 1.5rem 4rem rgba(31, 41, 38, 0.08);
+}
+
+.login-card { display: grid; grid-template-columns: 1fr 1.1fr; gap: clamp(2rem, 6vw, 4rem); }
+.dashboard { width: 100%; margin-top: 1rem; }
+
+.state-eyebrow {
+    display: block;
+    margin-bottom: 0.9rem;
+    color: var(--admin-accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+h1, h2, p { margin-top: 0; }
+h1 { margin-bottom: 0.9rem; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.08; }
+h2 { margin-bottom: 0.45rem; font-size: 1.05rem; }
+p { color: var(--admin-muted); line-height: 1.7; }
+
+form { display: flex; flex-direction: column; }
+label { margin: 0 0 0.45rem; font-size: 0.78rem; font-weight: 700; }
+input { width: 100%; margin: 0 0 1.1rem; padding: 0.85rem 0.9rem; color: var(--admin-ink); background: #fbfcfb; border: 1px solid var(--admin-line); border-radius: 0.25rem; outline: none; }
+input:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 3px rgba(49, 92, 76, 0.12); }
+
+.button { border: 0; border-radius: 0.25rem; cursor: pointer; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; padding: 0.8rem 1.05rem; text-transform: uppercase; }
+.button:disabled { cursor: wait; opacity: 0.6; }
+.button-primary { color: #fff; background: var(--admin-primary); }
+.button-primary:hover { background: var(--admin-primary-dark); }
+.button-secondary { color: var(--admin-primary-dark); background: transparent; border: 1px solid var(--admin-line); }
+.button-secondary:hover { border-color: var(--admin-primary); }
+.form-message { min-height: 1.5rem; margin: 0.8rem 0 0; font-size: 0.8rem; }
+.form-message[data-tone="error"] { color: var(--admin-danger); }
+
+.dashboard-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding-bottom: 2rem; border-bottom: 1px solid var(--admin-line); }
+.dashboard-heading h1 { margin-bottom: 0.45rem; }
+.dashboard-heading p { margin-bottom: 0; font-size: 0.82rem; }
+.task-placeholder { display: flex; align-items: flex-start; gap: 1rem; margin-top: 2rem; padding: 1.25rem; background: #f8faf8; border: 1px dashed #c5d1ca; }
+.task-placeholder p { margin-bottom: 0; font-size: 0.85rem; }
+.placeholder-icon { display: grid; flex: 0 0 2rem; place-items: center; width: 2rem; height: 2rem; color: var(--admin-primary); background: rgba(200, 165, 106, 0.2); border-radius: 50%; font-size: 1.2rem; }
+
+[hidden] { display: none !important; }
+
+@media (max-width: 640px) {
+    .admin-header { padding-bottom: 1.5rem; }
+    .admin-header-note { display: none; }
+    .login-card { display: block; }
+    .login-intro { margin-bottom: 2rem; }
+    .dashboard-heading { align-items: stretch; flex-direction: column; }
+    .dashboard-heading .button { align-self: flex-start; }
+}

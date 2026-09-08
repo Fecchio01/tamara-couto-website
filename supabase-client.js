@@ -29,6 +29,11 @@ export function createSupabaseClient({ config, factory } = {}) {
   return createClient(normalized.url, normalized.publishableKey);
 }
 
+export function getSupabaseAuth(options = {}) {
+  return createSupabaseClient(options)?.auth ?? null;
+}
+
 if (globalThis.window) {
   globalThis.window.createSupabaseClient = createSupabaseClient;
+  globalThis.window.getSupabaseAuth = getSupabaseAuth;
 }
