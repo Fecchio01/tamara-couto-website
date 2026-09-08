@@ -89,3 +89,59 @@ npx --yes supabase migration list --local
 ```
 
 The database test result remains the only outstanding verification item. No remote Supabase project, project ref, Auth user, or secret key was assumed or modified.
+
+## Fix round 1 report
+
+### Status
+
+DONE_WITH_CONCERNS
+
+The independent-review findings were addressed in fix commit `ba1db87` (`Harden property storage policies and tests`). The remaining concern is environmental: the local Supabase database could not start because Docker Desktop's Linux engine is unavailable.
+
+### Fixes applied
+
+- Replaced `ON CONFLICT (id) DO NOTHING` for `property-images` with an explicit existing-bucket check. A pre-existing public or null-state bucket now raises an exception; an existing private bucket is accepted. A second migration assertion verifies `public = false`.
+- Restricted the public storage SELECT policy to `object.get_public`, `object.get_authenticated_info`, and `object.get_authenticated` through `storage.allow_any_operation`; storage listing is no longer included.
+- Expanded pgTAP from 15 to 24 assertions: private bucket state, anonymous published-image read, anonymous draft-image rejection, anonymous listing rejection, anonymous upload rejection, non-admin property and storage update/delete rejection, and operation-scoped storage behavior.
+- Added a `public.properties.updated_at` trigger that refreshes timestamps on edits.
+- Added a `properties/%` check constraint to `property_images.storage_path`.
+
+### Fix-round tests and outputs
+
+```text
+npm test
+4 tests passed, 0 failed
+
+git diff --cached --check
+passed with no output before the fix commit
+
+npx --yes supabase db lint --help
+passed; CLI exposed --local and --linked lint modes
+
+npx --yes supabase test db
+failed: ECONNREFUSED 127.0.0.1:54322
+CLI suggestion: Make sure Docker is running, then run: supabase start
+
+npx --yes supabase db lint --local
+failed: ECONNREFUSED 127.0.0.1:54322
+
+npx --yes supabase migration list --local
+failed: ECONNREFUSED 127.0.0.1:54322
+
+docker version
+Docker client 29.7.2 was found, but the Docker Linux engine was unavailable:
+open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+```
+
+### Remaining prerequisite
+
+Start Docker Desktop with its Linux engine, then run from the repository:
+
+```powershell
+npx --yes supabase start
+npx --yes supabase test db
+npx --yes supabase db lint --local
+npx --yes supabase migration list --local
+```
+
+Until that prerequisite is available, the migration cannot be runtime-applied and the 24 pgTAP assertions cannot be reported as executed. No secret, service-role key, remote project ref, or Auth credential was added.
