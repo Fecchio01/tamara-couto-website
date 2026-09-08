@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const grid = document.querySelector(".properties-grid");
     if (!grid) return;
 
@@ -170,8 +170,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Initial render
+    // Initial render keeps the static inventory visible while the optional remote request is pending.
     renderProperties(IMOVEIS_DATA);
+
+    if (typeof window.loadPublicProperties === "function") {
+        const remoteProperties = await window.loadPublicProperties({ fallback: IMOVEIS_DATA });
+        if (Array.isArray(remoteProperties) && remoteProperties !== IMOVEIS_DATA) {
+            IMOVEIS_DATA.splice(0, IMOVEIS_DATA.length, ...remoteProperties);
+            renderProperties(IMOVEIS_DATA);
+        }
+    }
 
     // Share function
     window.shareImovel = function(e, id) {
