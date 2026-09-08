@@ -518,3 +518,40 @@ test('preserves safe provider error code and message', async () => {
 
   await assert.rejects(repository.listPublished(), /Loading published properties failed: PGRST116: No rows found/);
 });
+
+test('reorders property images through repository metadata updates', async () => {
+  const calls = [];
+  const imageQuery = {
+    update(payload) {
+      const chain = {
+        eq(column, value) {
+          calls.push({ payload, column, value });
+          return column === 'id'
+            ? { eq: chain.eq.bind(chain) }
+            : Promise.resolve({ error: null });
+        },
+      };
+      return chain;
+    },
+  };
+  const repository = createPropertyRepository({
+    client: {
+      from(table) {
+        assert.equal(table, 'property_images');
+        return imageQuery;
+      },
+    },
+  });
+
+  await repository.reorderImages('property-1', [
+    { id: 'image-b', storage_path: 'properties/property-1/b.jpg' },
+    { id: 'image-a', storage_path: 'properties/property-1/a.jpg' },
+  ]);
+
+  assert.deepEqual(calls, [
+    { payload: { sort_order: 0 }, column: 'id', value: 'image-b' },
+    { payload: { sort_order: 0 }, column: 'property_id', value: 'property-1' },
+    { payload: { sort_order: 1 }, column: 'id', value: 'image-a' },
+    { payload: { sort_order: 1 }, column: 'property_id', value: 'property-1' },
+  ]);
+});

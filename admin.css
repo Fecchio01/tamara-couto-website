@@ -23,7 +23,7 @@ body {
         var(--admin-paper);
 }
 
-button, input { font: inherit; }
+button, input, textarea, select { font: inherit; }
 
 .admin-shell {
     width: min(100% - 2rem, 70rem);
@@ -90,8 +90,10 @@ p { color: var(--admin-muted); line-height: 1.7; }
 
 form { display: flex; flex-direction: column; }
 label { margin: 0 0 0.45rem; font-size: 0.78rem; font-weight: 700; }
-input { width: 100%; margin: 0 0 1.1rem; padding: 0.85rem 0.9rem; color: var(--admin-ink); background: #fbfcfb; border: 1px solid var(--admin-line); border-radius: 0.25rem; outline: none; }
-input:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 3px rgba(49, 92, 76, 0.12); }
+input, textarea, select { width: 100%; margin: 0 0 1.1rem; padding: 0.85rem 0.9rem; color: var(--admin-ink); background: #fbfcfb; border: 1px solid var(--admin-line); border-radius: 0.25rem; outline: none; }
+input:focus, textarea:focus, select:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 3px rgba(49, 92, 76, 0.12); }
+textarea { resize: vertical; }
+small { color: var(--admin-muted); font-size: 0.72rem; }
 
 .button { border: 0; border-radius: 0.25rem; cursor: pointer; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; padding: 0.8rem 1.05rem; text-transform: uppercase; }
 .button:disabled { cursor: wait; opacity: 0.6; }
@@ -101,6 +103,7 @@ input:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 3px rgba(49,
 .button-secondary:hover { border-color: var(--admin-primary); }
 .form-message { min-height: 1.5rem; margin: 0.8rem 0 0; font-size: 0.8rem; }
 .form-message[data-tone="error"] { color: var(--admin-danger); }
+.form-message[data-tone="success"] { color: var(--admin-primary); }
 
 .dashboard-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding-bottom: 2rem; border-bottom: 1px solid var(--admin-line); }
 .dashboard-heading h1 { margin-bottom: 0.45rem; }
@@ -108,6 +111,43 @@ input:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 3px rgba(49,
 .task-placeholder { display: flex; align-items: flex-start; gap: 1rem; margin-top: 2rem; padding: 1.25rem; background: #f8faf8; border: 1px dashed #c5d1ca; }
 .task-placeholder p { margin-bottom: 0; font-size: 0.85rem; }
 .placeholder-icon { display: grid; flex: 0 0 2rem; place-items: center; width: 2rem; height: 2rem; color: var(--admin-primary); background: rgba(200, 165, 106, 0.2); border-radius: 50%; font-size: 1.2rem; }
+
+.property-workspace { margin-top: 2rem; }
+.property-toolbar { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.filters-form { display: grid; grid-template-columns: minmax(11rem, 1.3fr) minmax(8rem, 1fr) minmax(8rem, 1fr) auto; align-items: end; gap: 0.7rem; width: 100%; }
+.filters-form label { margin: 0; }
+.filters-form input, .filters-form select { margin: 0; padding: 0.65rem 0.7rem; }
+.property-loading, .property-empty { color: var(--admin-muted); font-size: 0.82rem; }
+.property-list { display: grid; gap: 0.75rem; }
+.property-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; border: 1px solid var(--admin-line); background: #fbfcfb; }
+.property-row-details h3 { margin: 0 0 0.35rem; font-size: 0.98rem; }
+.property-row-details p { margin: 0.15rem 0 0; font-size: 0.78rem; }
+.property-row-meta { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; justify-content: end; }
+.status-badge { padding: 0.3rem 0.5rem; border-radius: 999px; color: var(--admin-primary-dark); background: #e7eee9; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
+.status-published { color: #2e5e40; background: #dff0e3; }
+.status-archived { color: #715b36; background: #f5ead5; }
+.property-row-actions { display: flex; gap: 0.45rem; flex-wrap: wrap; justify-content: end; }
+.property-row-actions .button { padding: 0.55rem 0.7rem; font-size: 0.65rem; }
+.button-danger { color: var(--admin-danger); background: transparent; border: 1px solid #e4c8c4; }
+.button-danger:hover { border-color: var(--admin-danger); background: #fff7f6; }
+.property-editor { margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--admin-line); }
+.editor-heading { margin-bottom: 1rem; }
+.editor-heading h2 { margin-bottom: 0; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1rem; }
+.form-field-wide { grid-column: 1 / -1; }
+.form-field label { display: block; }
+.checkbox-field { display: flex; align-items: center; padding-top: 1.5rem; }
+.checkbox-field label { display: flex; align-items: center; gap: 0.55rem; }
+.checkbox-field input { width: auto; margin: 0; }
+.editor-actions { display: flex; justify-content: end; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.5rem; }
+.image-editor { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--admin-line); }
+.upload-label { display: inline-block; margin-bottom: 0.45rem; font-size: 0.78rem; font-weight: 700; }
+.image-help { margin-bottom: 1rem; font-size: 0.78rem; }
+.image-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 0.8rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+.image-item { overflow: hidden; border: 1px solid var(--admin-line); background: #fbfcfb; }
+.image-item img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #eef2ef; }
+.image-controls { display: flex; justify-content: center; gap: 0.35rem; padding: 0.55rem; }
+.image-controls .button { padding: 0.45rem 0.55rem; font-size: 0.7rem; }
 
 [hidden] { display: none !important; }
 
@@ -118,4 +158,11 @@ input:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 3px rgba(49,
     .login-intro { margin-bottom: 2rem; }
     .dashboard-heading { align-items: stretch; flex-direction: column; }
     .dashboard-heading .button { align-self: flex-start; }
+    .property-toolbar { align-items: stretch; flex-direction: column; }
+    .filters-form { grid-template-columns: 1fr; }
+    .property-row { align-items: stretch; flex-direction: column; }
+    .property-row-meta { justify-content: start; }
+    .property-row-actions { justify-content: start; }
+    .form-grid { display: block; }
+    .checkbox-field { padding-top: 0; margin-bottom: 1rem; }
 }

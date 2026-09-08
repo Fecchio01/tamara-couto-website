@@ -2,6 +2,7 @@ import {
   normalizePropertyRow,
   parsePriceToCents,
   toLegacyProperty,
+  validatePropertyInput,
 } from './admin/property-model.mjs';
 
 const PROPERTY_SELECT = '*, property_images(*)';
@@ -136,7 +137,7 @@ export function createPropertyRepository({ client, publicImageUrl } = {}) {
   async function listAdmin(filters = {}) {
     let query = client.from('properties').select(PROPERTY_SELECT).order('updated_at', { ascending: false });
     if (filters.status) query = query.eq('status', filters.status);
-    if (filters.type) query = query.eq('type', filters.type);
+    if (filters.type || filters.category) query = query.eq('type', filters.type ?? filters.category);
     if (filters.search) query = query.ilike('title', `%${filters.search}%`);
 
     const { data, error } = await query;
@@ -154,6 +155,10 @@ export function createPropertyRepository({ client, publicImageUrl } = {}) {
   }
 
   async function save(input, propertyId) {
+    const validation = validatePropertyInput(input);
+    if (!validation.valid) {
+      throw new Error(`Invalid property: ${validation.errors.join(', ')}`);
+    }
     const payload = inputToPayload(input);
     const query = propertyId
       ? client.from('properties').update(payload).eq('id', propertyId)
@@ -166,6 +171,21 @@ export function createPropertyRepository({ client, publicImageUrl } = {}) {
   async function setStatus(id, status) {
     const { error } = await client.from('properties').update({ status }).eq('id', id);
     if (error) throwOperationError('Updating property status', error);
+  }
+
+  async function reorderImages(propertyId, images = []) {
+    if (!propertyId) throw new Error('Property id is required');
+    const orderedImages = Array.isArray(images) ? images : [];
+    for (const [sortOrder, image] of orderedImages.entries()) {
+      const imageId = typeof image === 'string' ? image : image?.id;
+      if (!imageId) throw new Error('Image id is required');
+      const { error } = await client
+        .from('property_images')
+        .update({ sort_order: sortOrder })
+        .eq('id', imageId)
+        .eq('property_id', propertyId);
+      if (error) throwOperationError('Reordering property images', error);
+    }
   }
 
   async function remove(id) {
@@ -242,6 +262,7 @@ export function createPropertyRepository({ client, publicImageUrl } = {}) {
     getById,
     save,
     setStatus,
+    reorderImages,
     remove,
     removeProperty: remove,
     uploadImage,

@@ -66,13 +66,133 @@
                 <button class="button button-secondary" type="button" id="logoutButton">Sair</button>
             </div>
 
-            <div class="task-placeholder" id="task5Placeholder">
-                <span class="placeholder-icon" aria-hidden="true">＋</span>
-                <div>
-                    <h2>Gestão de imóveis</h2>
-                    <p>O cadastro, a edição, os status e as fotos serão adicionados na Task 5.</p>
+            <section class="property-workspace" aria-label="Gestão de imóveis">
+                <div class="property-toolbar">
+                    <form id="propertyFilters" class="filters-form">
+                        <label for="propertySearch">Buscar por título</label>
+                        <input id="propertySearch" name="search" type="search" placeholder="Ex.: Casa do Lago">
+                        <label for="propertyCategory">Categoria</label>
+                        <select id="propertyCategory" name="category">
+                            <option value="">Todas</option>
+                            <option value="Casa">Casa</option>
+                            <option value="Apartamento">Apartamento</option>
+                            <option value="Cobertura">Cobertura</option>
+                            <option value="Terreno">Terreno</option>
+                        </select>
+                        <label for="propertyStatus">Status</label>
+                        <select id="propertyStatus" name="status">
+                            <option value="">Todos</option>
+                            <option value="draft">Rascunhos</option>
+                            <option value="published">Publicados</option>
+                            <option value="archived">Arquivados</option>
+                        </select>
+                        <button class="button button-secondary" type="submit">Filtrar</button>
+                    </form>
+                    <button class="button button-primary" type="button" id="newPropertyButton">Novo imóvel</button>
                 </div>
-            </div>
+
+                <p class="form-message" id="propertyMessage" role="status" aria-live="polite"></p>
+                <p class="property-loading" id="propertyLoading" role="status" aria-live="polite" hidden>Carregando imóveis…</p>
+                <p class="property-empty" id="propertyEmpty" hidden>Nenhum imóvel encontrado com esses filtros.</p>
+                <div class="property-list" id="propertyList" aria-live="polite"></div>
+
+                <section class="property-editor" aria-labelledby="propertyFormHeading">
+                    <div class="editor-heading">
+                        <span class="state-eyebrow">Cadastro</span>
+                        <h2 id="propertyFormHeading">Novo imóvel</h2>
+                    </div>
+                    <form id="propertyForm" novalidate>
+                        <input type="hidden" name="propertyId">
+                        <div class="form-grid">
+                            <div class="form-field form-field-wide">
+                                <label for="propertyTitle">Título</label>
+                                <input id="propertyTitle" name="title" required>
+                            </div>
+                            <div class="form-field">
+                                <label for="propertyType">Categoria / tipo</label>
+                                <input id="propertyType" name="type" list="propertyTypes" required>
+                                <datalist id="propertyTypes"><option value="Casa"><option value="Apartamento"><option value="Cobertura"><option value="Terreno"></datalist>
+                            </div>
+                            <div class="form-field">
+                                <label for="propertyStatusField">Status</label>
+                                <select id="propertyStatusField" name="status">
+                                    <option value="draft">Rascunho</option>
+                                    <option value="published">Publicado</option>
+                                    <option value="archived">Arquivado</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label for="propertyNeighborhood">Bairro / região</label>
+                                <input id="propertyNeighborhood" name="neighborhood">
+                            </div>
+                            <div class="form-field">
+                                <label for="propertyLocation">Localização exibida</label>
+                                <input id="propertyLocation" name="location">
+                            </div>
+                            <div class="form-field">
+                                <label for="propertyPrice">Preço</label>
+                                <input id="propertyPrice" name="price" inputmode="decimal" placeholder="R$ 850.000,00">
+                                <small>Rascunhos podem ficar sem preço.</small>
+                            </div>
+                            <div class="form-field form-field-wide">
+                                <label for="propertyDescription">Descrição</label>
+                                <textarea id="propertyDescription" name="description" rows="4"></textarea>
+                            </div>
+                            <div class="form-field form-field-wide">
+                                <label for="propertyFeatures">Características</label>
+                                <textarea id="propertyFeatures" name="features" rows="3" placeholder="Uma por linha"></textarea>
+                            </div>
+                            <div class="form-field">
+                                <label for="propertyLatitude">Latitude</label>
+                                <input id="propertyLatitude" name="latitude" inputmode="decimal">
+                            </div>
+                            <div class="form-field">
+                                <label for="propertyLongitude">Longitude</label>
+                                <input id="propertyLongitude" name="longitude" inputmode="decimal">
+                            </div>
+                            <div class="form-field form-field-wide">
+                                <label for="propertyMapUrl">URL do mapa</label>
+                                <input id="propertyMapUrl" name="mapUrl" type="url">
+                            </div>
+                            <div class="form-field">
+                                <label for="propertyLegacyId">legacy_id</label>
+                                <input id="propertyLegacyId" name="legacy_id">
+                            </div>
+                            <div class="form-field checkbox-field">
+                                <label><input id="propertyIsNew" name="isNew" type="checkbox"> Imóvel novo</label>
+                            </div>
+                            <div class="form-field">
+                                <label for="propertyPurpose">Finalidade</label>
+                                <input id="propertyPurpose" name="purpose" placeholder="Venda ou aluguel">
+                            </div>
+                            <div class="form-field">
+                                <label for="propertySourceUrl">sourceUrl</label>
+                                <input id="propertySourceUrl" name="sourceUrl" type="url">
+                            </div>
+                            <div class="form-field form-field-wide">
+                                <label for="propertyNearby">Proximidades</label>
+                                <textarea id="propertyNearby" name="proximidades" rows="3" placeholder="Uma por linha"></textarea>
+                            </div>
+                        </div>
+                        <div class="editor-actions">
+                            <button class="button button-secondary" type="submit" data-save-status="draft">Salvar rascunho</button>
+                            <button class="button button-primary" type="submit" data-save-status="published">Salvar e publicar</button>
+                        </div>
+                    </form>
+
+                    <div class="image-editor" aria-labelledby="imageEditorHeading">
+                        <div class="editor-heading">
+                            <span class="state-eyebrow">Galeria</span>
+                            <h2 id="imageEditorHeading">Fotos do imóvel</h2>
+                        </div>
+                        <label class="upload-label" for="imageUpload">Adicionar fotos</label>
+                        <input id="imageUpload" type="file" accept="image/*" multiple disabled>
+                        <p class="image-help">Imagens até 10 MB. Use as setas para reordenar.</p>
+                        <p class="property-empty" id="imageEmpty">Salve o imóvel para adicionar fotos.</p>
+                        <ol class="image-list" id="imageList"></ol>
+                    </div>
+                </section>
+            </section>
         </section>
     </main>
 

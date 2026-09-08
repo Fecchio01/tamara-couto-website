@@ -3,6 +3,12 @@ import {
   hasSupabaseConfig,
   readSupabaseConfig,
 } from './supabase-client.js';
+import { createPropertyRepository } from './property-repository.js';
+import {
+  formatCentsAsPrice,
+  parsePriceToCents,
+  validatePropertyInput,
+} from './admin/property-model.mjs';
 
 const SAFE_MESSAGES = Object.freeze({
   INVALID_CREDENTIALS: 'Não foi possível entrar. Confira o e-mail e a senha.',
@@ -12,7 +18,450 @@ const SAFE_MESSAGES = Object.freeze({
   MEMBERSHIP_CHECK_FAILED: 'Não foi possível verificar a autorização da conta.',
   NOT_ADMIN: 'Esta conta não tem permissão para acessar o painel.',
   SIGN_OUT_FAILED: 'Não foi possível encerrar a sessão com segurança.',
+  LOAD_PROPERTIES_FAILED: 'Não foi possível carregar os imóveis.',
+  SAVE_PROPERTY_FAILED: 'Não foi possível salvar o imóvel.',
+  STATUS_PROPERTY_FAILED: 'Não foi possível atualizar o status do imóvel.',
+  DELETE_PROPERTY_FAILED: 'Não foi possível excluir o imóvel.',
+  IMAGE_UPLOAD_FAILED: 'Não foi possível enviar as fotos.',
+  IMAGE_DELETE_FAILED: 'Não foi possível excluir a foto.',
+  IMAGE_REORDER_FAILED: 'Não foi possível reordenar as fotos.',
 });
+
+export const IMAGE_MAX_SIZE_BYTES = 10 * 1024 * 1024;
+
+function formField(form, name) {
+  if (!form) return null;
+  if (form.elements?.namedItem) {
+    const named = form.elements.namedItem(name);
+    if (named) return named;
+  }
+  if (typeof form.querySelector === 'function') return form.querySelector(`[name="${name}"]`);
+  return form[name] ?? null;
+}
+
+function readField(form, ...names) {
+  const field = names.map((name) => formField(form, name)).find(Boolean);
+  return field?.value ?? '';
+}
+
+function readChecked(form, ...names) {
+  const field = names.map((name) => formField(form, name)).find(Boolean);
+  return Boolean(field?.checked);
+}
+
+function splitFormList(value) {
+  return String(value ?? '')
+    .split(/[\n,]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export function readPropertyForm(form = globalThis.document?.getElementById('propertyForm')) {
+  const price = readField(form, 'price').trim();
+  return {
+    title: readField(form, 'title').trim(),
+    type: readField(form, 'type').trim(),
+    neighborhood: readField(form, 'neighborhood').trim(),
+    location: readField(form, 'location').trim(),
+    price,
+    price_cents: parsePriceToCents(price),
+    description: readField(form, 'description'),
+    features: splitFormList(readField(form, 'features')),
+    latitude: readField(form, 'latitude').trim(),
+    longitude: readField(form, 'longitude').trim(),
+    mapUrl: readField(form, 'mapUrl', 'map_url').trim(),
+    legacy_id: readField(form, 'legacy_id').trim(),
+    isNew: readChecked(form, 'isNew', 'is_new'),
+    purpose: readField(form, 'purpose').trim(),
+    sourceUrl: readField(form, 'sourceUrl', 'source_url').trim(),
+    proximidades: splitFormList(readField(form, 'proximidades')),
+    status: readField(form, 'status') || 'draft',
+  };
+}
+
+function setFormField(form, names, value) {
+  const field = names.map((name) => formField(form, name)).find(Boolean);
+  if (!field) return;
+  if ('checked' in field && typeof value === 'boolean') field.checked = value;
+  else field.value = value == null ? '' : String(value);
+}
+
+export function fillPropertyForm(form = globalThis.document?.getElementById('propertyForm'), property = {}) {
+  if (!form) return;
+  setFormField(form, ['title'], property.title ?? '');
+  setFormField(form, ['type'], property.type ?? '');
+  setFormField(form, ['neighborhood'], property.neighborhood ?? '');
+  setFormField(form, ['location'], property.location ?? '');
+  const formPrice = property.price ?? (property.price_cents == null ? '' : formatCentsAsPrice(property.price_cents));
+  setFormField(form, ['price'], formPrice);
+  setFormField(form, ['description'], property.description ?? '');
+  setFormField(form, ['features'], (property.features ?? []).join('\n'));
+  setFormField(form, ['latitude'], property.latitude ?? '');
+  setFormField(form, ['longitude'], property.longitude ?? '');
+  setFormField(form, ['mapUrl', 'map_url'], property.mapUrl ?? property.map_url ?? '');
+  setFormField(form, ['legacy_id'], property.legacy_id ?? '');
+  setFormField(form, ['isNew', 'is_new'], property.isNew ?? property.is_new ?? false);
+  setFormField(form, ['purpose'], property.purpose ?? '');
+  setFormField(form, ['sourceUrl', 'source_url'], property.sourceUrl ?? property.source_url ?? '');
+  setFormField(form, ['proximidades'], (property.proximidades ?? []).join('\n'));
+  setFormField(form, ['status'], property.status ?? 'draft');
+  setFormField(form, ['propertyId'], property.id ?? '');
+}
+
+function textElement(root, tag, text) {
+  const element = root.createElement(tag);
+  element.textContent = text;
+  return element;
+}
+
+export function renderPropertyList(properties = [], root = globalThis.document) {
+  const list = root?.getElementById?.('propertyList');
+  const empty = root?.getElementById?.('propertyEmpty');
+  if (!list || !root?.createElement) return;
+  list.replaceChildren();
+  const rows = Array.isArray(properties) ? properties : [];
+  if (empty) empty.hidden = rows.length > 0;
+
+  for (const property of rows) {
+    const item = root.createElement('article');
+    item.className = 'property-row';
+    item.dataset.propertyId = property.id ?? '';
+
+    const details = root.createElement('div');
+    details.className = 'property-row-details';
+    details.append(
+      textElement(root, 'h3', property.title || 'Sem título'),
+      textElement(root, 'p', [property.type, property.neighborhood].filter(Boolean).join(' · ') || 'Sem categoria'),
+      textElement(root, 'p', property.price || 'Preço não informado'),
+    );
+
+    const meta = root.createElement('div');
+    meta.className = 'property-row-meta';
+    const status = textElement(root, 'span', property.status || 'draft');
+    status.className = `status-badge status-${property.status || 'draft'}`;
+    meta.append(status);
+
+    const actions = root.createElement('div');
+    actions.className = 'property-row-actions';
+    const edit = root.createElement('button');
+    edit.type = 'button';
+    edit.className = 'button button-secondary';
+    edit.dataset.action = 'edit';
+    edit.textContent = 'Editar';
+    actions.append(edit);
+    if (property.status !== 'published') {
+      const publish = root.createElement('button');
+      publish.type = 'button';
+      publish.className = 'button button-primary';
+      publish.dataset.action = 'publish';
+      publish.textContent = 'Publicar';
+      actions.append(publish);
+    }
+    if (property.status !== 'archived') {
+      const archive = root.createElement('button');
+      archive.type = 'button';
+      archive.className = 'button button-secondary';
+      archive.dataset.action = 'archive';
+      archive.textContent = 'Arquivar';
+      actions.append(archive);
+    }
+    const remove = root.createElement('button');
+    remove.type = 'button';
+    remove.className = 'button button-danger';
+    remove.dataset.action = 'delete';
+    remove.textContent = 'Excluir';
+    actions.append(remove);
+    meta.append(actions);
+    item.append(details, meta);
+    list.append(item);
+  }
+}
+
+let propertyAdminContext = null;
+
+function propertyImages(property) {
+  const records = Array.isArray(property?.property_images)
+    ? [...property.property_images].sort((left, right) => Number(left.sort_order) - Number(right.sort_order))
+    : [];
+  return records.map((record, index) => ({
+    ...record,
+    publicUrl: property?.images?.[index] ?? record.storage_path,
+  }));
+}
+
+function showPropertyMessage(message, tone = 'success') {
+  const target = propertyAdminContext?.elements?.propertyMessage;
+  if (!target) return;
+  target.textContent = message;
+  target.dataset.tone = tone;
+}
+
+function safePropertyError(error, fallback) {
+  return error?.code && SAFE_MESSAGES[error.code] ? SAFE_MESSAGES[error.code] : fallback;
+}
+
+function currentPropertyId(form) {
+  return readField(form, 'propertyId').trim() || null;
+}
+
+function renderPropertyImages(property) {
+  const context = propertyAdminContext;
+  const list = context?.elements?.imageList;
+  if (!list || !context.root?.createElement) return;
+  list.replaceChildren();
+  const images = propertyImages(property);
+  context.elements.imageEmpty.hidden = images.length > 0;
+  context.elements.imageUpload.disabled = !property?.id;
+
+  images.forEach((image, index) => {
+    const item = context.root.createElement('li');
+    item.className = 'image-item';
+    item.dataset.imageId = image.id ?? '';
+    const preview = context.root.createElement('img');
+    preview.src = image.publicUrl;
+    preview.alt = image.alt_text || `Foto ${index + 1}`;
+    preview.loading = 'lazy';
+    const controls = context.root.createElement('div');
+    controls.className = 'image-controls';
+    const moveLeft = context.root.createElement('button');
+    moveLeft.type = 'button';
+    moveLeft.className = 'button button-secondary';
+    moveLeft.dataset.imageAction = 'left';
+    moveLeft.disabled = index === 0;
+    moveLeft.textContent = '←';
+    moveLeft.setAttribute('aria-label', `Mover foto ${index + 1} para a esquerda`);
+    const moveRight = context.root.createElement('button');
+    moveRight.type = 'button';
+    moveRight.className = 'button button-secondary';
+    moveRight.dataset.imageAction = 'right';
+    moveRight.disabled = index === images.length - 1;
+    moveRight.textContent = '→';
+    moveRight.setAttribute('aria-label', `Mover foto ${index + 1} para a direita`);
+    const remove = context.root.createElement('button');
+    remove.type = 'button';
+    remove.className = 'button button-danger';
+    remove.dataset.imageAction = 'delete';
+    remove.textContent = 'Excluir';
+    controls.append(moveLeft, moveRight, remove);
+    item.append(preview, controls);
+    list.append(item);
+  });
+}
+
+async function refreshPropertyList() {
+  const context = propertyAdminContext;
+  if (!context) return [];
+  context.elements.propertyLoading.hidden = false;
+  try {
+    const properties = await context.repository.listAdmin(context.filters);
+    context.properties = properties;
+    renderPropertyList(properties, context.root);
+    return properties;
+  } catch (error) {
+    showPropertyMessage(safePropertyError(error, SAFE_MESSAGES.LOAD_PROPERTIES_FAILED), 'error');
+    return [];
+  } finally {
+    context.elements.propertyLoading.hidden = true;
+  }
+}
+
+async function loadPropertyIntoForm(propertyId) {
+  const context = propertyAdminContext;
+  if (!context) return;
+  const property = context.properties.find((item) => item.id === propertyId)
+    ?? await context.repository.getById(propertyId);
+  if (!property) return;
+  context.activeProperty = property;
+  fillPropertyForm(context.elements.propertyForm, property);
+  context.elements.formHeading.textContent = 'Editar imóvel';
+  renderPropertyImages(property);
+  context.elements.propertyForm.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+}
+
+async function refreshActiveProperty() {
+  const context = propertyAdminContext;
+  if (!context?.activeProperty?.id) return;
+  const property = await context.repository.getById(context.activeProperty.id);
+  if (!property) return;
+  context.activeProperty = property;
+  context.properties = context.properties.map((item) => item.id === property.id ? property : item);
+  fillPropertyForm(context.elements.propertyForm, property);
+  renderPropertyImages(property);
+}
+
+export async function handlePropertySubmit(event) {
+  event?.preventDefault?.();
+  const context = propertyAdminContext;
+  if (!context) return;
+  const form = event?.currentTarget ?? context.elements.propertyForm;
+  const input = readPropertyForm(form);
+  const validation = validatePropertyInput(input);
+  if (!validation.valid) {
+    showPropertyMessage(`Preencha: ${validation.errors.join(', ')}.`, 'error');
+    return;
+  }
+  if (event?.submitter?.dataset?.saveStatus) {
+    input.status = event.submitter.dataset.saveStatus;
+  }
+
+  const button = event?.submitter;
+  if (button) button.disabled = true;
+  try {
+    const saved = await context.repository.save(input, currentPropertyId(form));
+    context.activeProperty = saved;
+    fillPropertyForm(form, saved);
+    context.elements.formHeading.textContent = 'Editar imóvel';
+    await refreshPropertyList();
+    renderPropertyImages(saved);
+    showPropertyMessage(input.status === 'published' ? 'Imóvel publicado.' : 'Rascunho salvo.');
+  } catch (error) {
+    showPropertyMessage(safePropertyError(error, SAFE_MESSAGES.SAVE_PROPERTY_FAILED), 'error');
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+export async function handleImageUpload(files, propertyId) {
+  const context = propertyAdminContext;
+  if (!context || !propertyId) return;
+  const selectedFiles = Array.from(files ?? []);
+  const invalid = selectedFiles.find((file) => !String(file?.type ?? '').toLowerCase().startsWith('image/'));
+  if (invalid || selectedFiles.some((file) => Number(file?.size ?? 0) > IMAGE_MAX_SIZE_BYTES)) {
+    showPropertyMessage(`Selecione apenas imagens de até ${IMAGE_MAX_SIZE_BYTES / 1024 / 1024} MB.`, 'error');
+    return;
+  }
+  const existingCount = propertyImages(context.activeProperty).length;
+  try {
+    for (const [index, file] of selectedFiles.entries()) {
+      await context.repository.uploadImage(propertyId, file, existingCount + index);
+    }
+    await refreshActiveProperty();
+    showPropertyMessage('Fotos enviadas.');
+  } catch (error) {
+    showPropertyMessage(safePropertyError(error, SAFE_MESSAGES.IMAGE_UPLOAD_FAILED), 'error');
+  }
+}
+
+async function reorderPropertyImage(propertyId, images, index, offset) {
+  const nextIndex = index + offset;
+  if (nextIndex < 0 || nextIndex >= images.length) return;
+  const ordered = [...images];
+  [ordered[index], ordered[nextIndex]] = [ordered[nextIndex], ordered[index]];
+  try {
+    await propertyAdminContext.repository.reorderImages(propertyId, ordered);
+    await refreshActiveProperty();
+    showPropertyMessage('Ordem das fotos atualizada.');
+  } catch (error) {
+    showPropertyMessage(safePropertyError(error, SAFE_MESSAGES.IMAGE_REORDER_FAILED), 'error');
+  }
+}
+
+function bindPropertyDashboard(context) {
+  const { elements, root } = context;
+  elements.propertyForm?.addEventListener('submit', handlePropertySubmit);
+  elements.newPropertyButton?.addEventListener('click', () => {
+    context.activeProperty = null;
+    fillPropertyForm(elements.propertyForm, { status: 'draft' });
+    elements.formHeading.textContent = 'Novo imóvel';
+    renderPropertyImages({});
+    showPropertyMessage('');
+    elements.propertyForm.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+  });
+  elements.filtersForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    context.filters = {
+      status: readField(elements.filtersForm, 'status'),
+      category: readField(elements.filtersForm, 'category'),
+      search: readField(elements.filtersForm, 'search').trim(),
+    };
+    void refreshPropertyList();
+  });
+  elements.filtersForm?.addEventListener('input', () => {
+    context.filters = {
+      status: readField(elements.filtersForm, 'status'),
+      category: readField(elements.filtersForm, 'category'),
+      search: readField(elements.filtersForm, 'search').trim(),
+    };
+  });
+  elements.propertyList?.addEventListener('click', async (event) => {
+    const actionButton = event.target.closest?.('[data-action]');
+    const row = actionButton?.closest?.('[data-property-id]');
+    if (!actionButton || !row) return;
+    const propertyId = row.dataset.propertyId;
+    const property = context.properties.find((item) => item.id === propertyId);
+    if (!property) return;
+    const action = actionButton.dataset.action;
+    if (action === 'edit') return loadPropertyIntoForm(propertyId);
+    if (action === 'delete') {
+      if (typeof globalThis.confirm === 'function' && !globalThis.confirm('Excluir este imóvel e suas fotos?')) return;
+      try {
+        await context.repository.remove(propertyId);
+        if (context.activeProperty?.id === propertyId) {
+          context.activeProperty = null;
+          fillPropertyForm(elements.propertyForm, { status: 'draft' });
+          renderPropertyImages({});
+        }
+        await refreshPropertyList();
+        showPropertyMessage('Imóvel excluído.');
+      } catch (error) {
+        showPropertyMessage(safePropertyError(error, SAFE_MESSAGES.DELETE_PROPERTY_FAILED), 'error');
+      }
+      return;
+    }
+    const status = action === 'publish' ? 'published' : action === 'archive' ? 'archived' : null;
+    if (!status) return;
+    try {
+      await context.repository.setStatus(propertyId, status);
+      await refreshPropertyList();
+      showPropertyMessage(status === 'published' ? 'Imóvel publicado.' : 'Imóvel arquivado.');
+    } catch (error) {
+      showPropertyMessage(safePropertyError(error, SAFE_MESSAGES.STATUS_PROPERTY_FAILED), 'error');
+    }
+  });
+  elements.imageUpload?.addEventListener('change', (event) => {
+    void handleImageUpload(event.target.files, currentPropertyId(elements.propertyForm));
+    event.target.value = '';
+  });
+  elements.imageList?.addEventListener('click', async (event) => {
+    const actionButton = event.target.closest?.('[data-image-action]');
+    const item = actionButton?.closest?.('[data-image-id]');
+    if (!actionButton || !item || !context.activeProperty) return;
+    const images = propertyImages(context.activeProperty);
+    const index = images.findIndex((image) => image.id === item.dataset.imageId);
+    if (index < 0) return;
+    const action = actionButton.dataset.imageAction;
+    if (action === 'left') return reorderPropertyImage(context.activeProperty.id, images, index, -1);
+    if (action === 'right') return reorderPropertyImage(context.activeProperty.id, images, index, 1);
+    if (action === 'delete') {
+      try {
+        await context.repository.removeImage(images[index]);
+        await refreshActiveProperty();
+        showPropertyMessage('Foto excluída.');
+      } catch (error) {
+        showPropertyMessage(safePropertyError(error, SAFE_MESSAGES.IMAGE_DELETE_FAILED), 'error');
+      }
+    }
+  });
+}
+
+async function initializePropertyDashboard({ client, repository, root, elements }) {
+  if (!elements.propertyForm || !elements.propertyList) return;
+  if (!propertyAdminContext || propertyAdminContext.root !== root) {
+    propertyAdminContext = {
+      client,
+      repository: repository ?? createPropertyRepository({ client }),
+      root,
+      elements,
+      filters: {},
+      properties: [],
+      activeProperty: null,
+    };
+    bindPropertyDashboard(propertyAdminContext);
+    fillPropertyForm(elements.propertyForm, { status: 'draft' });
+    renderPropertyImages({});
+  }
+  await refreshPropertyList();
+}
 
 export class AdminAuthError extends Error {
   constructor(code) {
@@ -139,6 +588,17 @@ function getPageElements(root = globalThis.document) {
     dashboardMessage: root.getElementById('dashboardMessage'),
     loginButton: root.getElementById('loginButton'),
     userLabel: root.getElementById('adminUserLabel'),
+    propertyLoading: root.getElementById('propertyLoading'),
+    propertyEmpty: root.getElementById('propertyEmpty'),
+    propertyList: root.getElementById('propertyList'),
+    propertyForm: root.getElementById('propertyForm'),
+    filtersForm: root.getElementById('propertyFilters'),
+    newPropertyButton: root.getElementById('newPropertyButton'),
+    formHeading: root.getElementById('propertyFormHeading'),
+    propertyMessage: root.getElementById('propertyMessage'),
+    imageUpload: root.getElementById('imageUpload'),
+    imageList: root.getElementById('imageList'),
+    imageEmpty: root.getElementById('imageEmpty'),
   };
 }
 
@@ -202,7 +662,7 @@ export function requireAdminSession() {
 let pageController;
 let pageSync;
 
-export async function initializeAdmin({ client } = {}) {
+export async function initializeAdmin({ client, repository } = {}) {
   const root = globalThis.document;
   if (!root) return null;
 
@@ -242,6 +702,12 @@ export async function initializeAdmin({ client } = {}) {
       try {
         const user = await pageController.requireAdminSession();
         showState({ kind: 'admin', user });
+        await initializePropertyDashboard({
+          client: resolvedClient,
+          repository,
+          root,
+          elements,
+        });
       } catch (error) {
         if (error?.code === 'NOT_ADMIN') {
           try {
@@ -308,7 +774,12 @@ export async function initializeAdmin({ client } = {}) {
 if (globalThis.window) {
   globalThis.window.AdminPanel = {
     createAdminAuth,
+    fillPropertyForm,
+    handleImageUpload,
+    handlePropertySubmit,
     initializeAdmin,
+    readPropertyForm,
+    renderPropertyList,
     renderAdminState,
     requireAdminSession,
     signIn,

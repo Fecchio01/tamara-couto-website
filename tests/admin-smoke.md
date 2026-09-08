@@ -10,6 +10,7 @@ the remaining checks.
 - [ ] `npm test` passes.
 - [ ] `node --check admin.js` passes.
 - [ ] `node --check supabase-client.js` passes.
+- [ ] `node --check property-repository.js` passes.
 - [ ] `git diff --check` passes.
 
 ## Browser checks
@@ -59,6 +60,34 @@ the remaining checks.
       auth listeners.
 - [ ] Browser storage contains only the normal Supabase Auth session; no
       service-role key or other backend secret is present.
+
+### Property CRUD and filters
+
+- [ ] After an authorized admin login, the list loads with status, category,
+      and title-search filters; loading, empty, and error messages stay inside
+      the dashboard.
+- [ ] Create a draft with a title/category and no price; confirm the draft is
+      listed and the form can reopen it for editing.
+- [ ] Edit the location, description, features, optional `legacy_id`, map URL,
+      purpose, source URL, and nearby places; save and confirm the values are
+      preserved after reload.
+- [ ] Publish the draft; confirm the published status appears in the list.
+- [ ] Archive it; confirm the archived status appears and it is excluded when
+      the published filter is selected.
+- [ ] Delete the property; confirm it disappears from the list after the
+      confirmation prompt.
+
+### Property photos
+
+- [ ] Open a saved property and select two valid image files; non-image files
+      and files larger than 10 MB are rejected before any upload request.
+- [ ] Confirm both previews appear, move the second photo before the first,
+      reload the property, and verify the order is preserved.
+- [ ] Delete one photo and confirm its preview disappears and the repository
+      removes both its metadata and storage object.
+- [ ] Confirm browser requests use the `property-images/properties/<id>/...`
+      path and no service-role credential appears in source, storage, logs, or
+      URLs.
 
 ## Limitations
 
