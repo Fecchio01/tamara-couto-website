@@ -118,6 +118,6 @@ The first command remains safe without credentials; the non-dry-run import requi
 ## Commit and branch handoff
 
 - Security-boundary fix: `d17f437`.
-- Verification record commit: to be recorded immediately after this file is committed; its exact hash and final remote tips are reported in the handoff message.
+- Verification record introduced in commit `fc8aac8c380ad4faa2174f4553d15dfe570b4d3e`.
 - Required remote branches: `agent/sync-property-listings` and `main`.
 - Both branches were at `166086647a6564a4c9c4f5473f10ed8b7eb239da` before this Task 7 work.
