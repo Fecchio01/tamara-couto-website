@@ -59,7 +59,7 @@ test('importer preserves legacy id, Brazilian price, and every feature string', 
 
 test('importer builds deterministic image paths from repository-relative files', () => {
   const property = {
-    id: '665313',
+    id: 'deterministic-test',
     images: [
       'assets/imoveis/imovel-0/foto-0.jpg',
       'assets/imoveis/imovel-0/foto-1.jpg',
@@ -73,18 +73,51 @@ test('importer builds deterministic image paths from repository-relative files',
   assert.deepEqual(firstPlan, [
     {
       sourcePath: path.join(repositoryRoot, 'assets/imoveis/imovel-0/foto-0.jpg'),
-      storagePath: 'properties/665313/000-foto-0.jpg',
+      storagePath: 'properties/deterministic-test/000-foto-0.jpg',
       sortOrder: 0,
       altText: 'foto-0.jpg',
     },
     {
       sourcePath: path.join(repositoryRoot, 'assets/imoveis/imovel-0/foto-1.jpg'),
-      storagePath: 'properties/665313/001-foto-1.jpg',
+      storagePath: 'properties/deterministic-test/001-foto-1.jpg',
       sortOrder: 1,
       altText: 'foto-1.jpg',
     },
   ]);
   assert.equal(fs.existsSync(firstPlan[0].sourcePath), true);
+});
+
+test('importer uses the official rendered galleries in numeric order and falls back to property images', () => {
+  const expectedCounts = {
+    '665313': 27,
+    '618158': 21,
+    '552642': 13,
+    '657241': 29,
+    '649637': 29,
+    '689393': 16,
+    '657381': 1,
+    '697256': 12,
+    '697307': 5,
+    '698182': 3,
+  };
+
+  for (const [legacyId, count] of Object.entries(expectedCounts)) {
+    const plan = buildImageUploadPlan({
+      id: legacyId,
+      images: ['assets/imoveis/imovel-0/fallback.jpg'],
+    }, repositoryRoot);
+    assert.equal(plan.length, count, legacyId);
+    assert.equal(path.basename(plan[0].sourcePath), `${legacyId}-0.jpg`);
+    assert.equal(path.basename(plan.at(-1).sourcePath), `${legacyId}-${count - 1}.jpg`);
+    assert.deepEqual(plan.map((image) => image.sortOrder), Array.from({ length: count }, (_, index) => index));
+  }
+
+  const fallbackPlan = buildImageUploadPlan({
+    id: 'not-an-official-gallery',
+    images: ['assets/imoveis/imovel-0/foto-0.jpg'],
+  }, repositoryRoot);
+  assert.equal(fallbackPlan.length, 1);
+  assert.equal(path.basename(fallbackPlan[0].sourcePath), 'foto-0.jpg');
 });
 
 test('importer rejects dot segments in legacy ids and image paths', () => {
@@ -93,11 +126,11 @@ test('importer rejects dot segments in legacy ids and image paths', () => {
     /reserved path segment/,
   );
   assert.throws(
-    () => buildImageUploadPlan({ id: '665313', images: ['assets/./foto.jpg'] }, repositoryRoot),
+    () => buildImageUploadPlan({ id: 'not-official', images: ['assets/./foto.jpg'] }, repositoryRoot),
     /reserved path segment/,
   );
   assert.throws(
-    () => buildImageUploadPlan({ id: '665313', images: ['..'] }, repositoryRoot),
+    () => buildImageUploadPlan({ id: 'not-official', images: ['..'] }, repositoryRoot),
     /reserved path segment/,
   );
 });
@@ -114,12 +147,12 @@ test('replace-images deletes obsolete metadata and storage objects', async () =>
   const fetchImpl = async (url, init = {}) => {
     requests.push({ url, method: init.method ?? 'GET', body: init.body });
     if (url.includes('/rest/v1/properties?')) {
-      return response([{ id: 'database-uuid', legacy_id: '665313' }]);
+      return response([{ id: 'database-uuid', legacy_id: 'import-test' }]);
     }
     if (url.includes('/rest/v1/property_images?property_id=')) {
       return response([
-        { id: 'old-image', storage_path: 'properties/665313/old.jpg' },
-        { id: 'kept-image', storage_path: 'properties/665313/000-foto-0.jpg' },
+        { id: 'old-image', storage_path: 'properties/import-test/old.jpg' },
+        { id: 'kept-image', storage_path: 'properties/import-test/000-foto-0.jpg' },
       ]);
     }
     if (url.includes('/rest/v1/property_images?on_conflict=')) {
@@ -129,7 +162,7 @@ test('replace-images deletes obsolete metadata and storage objects', async () =>
   };
 
   await importProperties([{
-    id: '665313',
+    id: 'import-test',
     title: 'Casa',
     type: 'Casa',
     price: 'R$ 1.000',
@@ -146,7 +179,7 @@ test('replace-images deletes obsolete metadata and storage objects', async () =>
   const deleted = requests.filter((request) => request.method === 'DELETE');
   assert.deepEqual(deleted.map((request) => [request.method, request.url]), [
     ['DELETE', 'https://supabase.example.test/rest/v1/property_images?id=eq.old-image'],
-    ['DELETE', 'https://supabase.example.test/storage/v1/object/property-images/properties/665313/old.jpg'],
+    ['DELETE', 'https://supabase.example.test/storage/v1/object/property-images/properties/import-test/old.jpg'],
   ]);
 });
 
@@ -155,17 +188,17 @@ test('replace-images preflight rejects ENOENT before deleting old images', async
   const fetchImpl = async (url, init = {}) => {
     requests.push({ url, method: init.method ?? 'GET' });
     if (url.includes('/rest/v1/properties?')) {
-      return response([{ id: 'database-uuid', legacy_id: '665313' }]);
+      return response([{ id: 'database-uuid', legacy_id: 'import-test' }]);
     }
     if (url.includes('/rest/v1/property_images?property_id=')) {
-      return response([{ id: 'old-image', storage_path: 'properties/665313/old.jpg' }]);
+      return response([{ id: 'old-image', storage_path: 'properties/import-test/old.jpg' }]);
     }
     return response({});
   };
 
   await assert.rejects(
     importProperties([{
-      id: '665313',
+      id: 'import-test',
       title: 'Casa',
       type: 'Casa',
       images: ['assets/imoveis/imovel-0/file-does-not-exist.jpg'],
@@ -203,13 +236,13 @@ test('replace-images preflights every property before mutating the first one', a
   await assert.rejects(
     importProperties([
       {
-        id: 'first',
+        id: 'import-test-first',
         title: 'Primeiro imóvel',
         type: 'Casa',
         images: ['assets/imoveis/imovel-0/foto-0.jpg'],
       },
       {
-        id: 'second',
+        id: 'import-test-second',
         title: 'Segundo imóvel',
         type: 'Casa',
         images: ['assets/imoveis/imovel-0/file-does-not-exist.jpg'],

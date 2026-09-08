@@ -5,3 +5,6 @@
 # Keep local importer credentials outside version control.
 scripts/.env
 scripts/.env.*
+
+# Keep local browser configuration outside version control; keep the example tracked.
+/supabase-config.js

@@ -1,5 +1,8 @@
 begin;
 
+-- These assertions exercise SQL policies/RLS through storage.objects.
+-- They are not Storage HTTP API-level upload/delete tests.
+
 select plan(26);
 
 insert into auth.users (

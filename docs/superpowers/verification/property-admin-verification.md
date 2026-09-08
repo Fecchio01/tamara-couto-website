@@ -8,7 +8,7 @@ Starting commit: `166086647a6564a4c9c4f5473f10ed8b7eb239da` (`Preflight all impo
 
 ## Result summary
 
-The local automated suite passed after a narrowly scoped security fix in `property-repository.js`: the browser-side error redaction pattern now matches both service-role assignment formats, including the Supabase environment-variable form, without containing the literal variable name or secret in browser JavaScript. The allowlisted fragment fix and regression test are part of this Fix Round 1.
+The local automated suite covers the final review fixes: the importer now uses the official galleries rendered by `imoveis-ui.js`, local browser configuration is ignored and untracked, and the storage boundary distinguishes SQL/RLS policy checks from API-level object operations. The configured-Supabase and browser-dependent portions remain **BLOCKED**, not passed.
 
 The configured-Supabase and browser-dependent portions are **BLOCKED**, not passed. The Supabase CLI is not installed, Docker cannot connect to its daemon, and no browser surface is available in this environment. No live RLS test, authenticated admin flow, or visual browser assertion was claimed.
 
@@ -28,7 +28,7 @@ git diff --check
 
 | Command | Result |
 | --- | --- |
-| `npm test` | PASS — 41 tests, 41 passed, 0 failed, 0 skipped, exit 0 after the Fix Round 1 regression test. |
+| `npm test` | PASS — 42 tests, 42 passed, 0 failed, 0 skipped, exit 0 after the official-gallery regression test. |
 | `node --check imoveis-ui.js` | PASS — exit 0. |
 | `node --check imoveis-data.js` | PASS — exit 0. |
 | `node --check admin.js` | PASS — exit 0. |
@@ -44,7 +44,9 @@ Exact command:
 node scripts/import-static-properties.mjs --dry-run
 ```
 
-Result: PASS — `Dry-run: 10 properties planned`, with no Supabase connection and no file mutation. The first three planned records were legacy IDs `665313`, `618158`, and `552642`; their planned image counts were 10, 10, and 10 respectively. The output contained deterministic `properties/<legacy_id>/...` storage paths.
+Result: PASS — `Dry-run: 10 properties planned`, with no Supabase connection and no file mutation. The official rendered gallery counts are `665313=27`, `618158=21`, `552642=13`, `657241=29`, `649637=29`, `689393=16`, `657381=1`, `697256=12`, `697307=5`, and `698182=3`, totaling 156 images. The output contains deterministic `properties/<legacy_id>/...` storage paths in numeric gallery order. When no official gallery exists, the importer falls back to `property.images`.
+
+The official-gallery inventory was checked from `assets/imoveis/oficiais/<legacy_id>-<n>.jpg`; the files render from `imoveis-ui.js` using the same numeric suffixes. The dry-run now plans those files instead of only the legacy ten-image arrays.
 
 ## Exact rerunnable security scans
 
@@ -113,9 +115,9 @@ Static inspection of the application and migration found:
 - Anonymous/public read policies constrain property and image access to published properties.
 - Mutating policies require an `admin_users` row with `role = 'admin'` and `auth.uid()`; property, image, and storage update policies include both `USING` and `WITH CHECK`.
 - `admin.js` checks `admin_users` after `getUser()` and does not use editable `user_metadata` for authorization.
-- Browser-surface scan after the Fix Round 1 change: no `service_role` or `SUPABASE_SERVICE_ROLE_KEY` match in HTML/JS outside the local importer/test/documentation scopes (`NO_MATCH`).
+- Browser-surface scan after the final review change: no `service_role` or `SUPABASE_SERVICE_ROLE_KEY` match in HTML/JS outside the local importer/test/documentation scopes (`NO_MATCH`).
 - Credential-shaped scan over tracked source/config surfaces: `NO_CREDENTIAL_SHAPED_MATCH`.
-- The expected service-role references are limited to the local importer environment variable boundary in `scripts/import-static-properties.mjs` and `.env.example`, the role-name documentation comment in `supabase/config.toml`, and test/documentation text. No secret values were printed or committed. `supabase-config.js` remains tracked with blank values only.
+- The expected service-role references are limited to the local importer environment variable boundary in `scripts/import-static-properties.mjs` and `.env.example`, the role-name documentation comment in `supabase/config.toml`, and test/documentation text. No secret values were printed or committed. `supabase-config.js` is ignored and absent from the Git index; `supabase-config.example.js` remains tracked.
 
 Dynamic security results are **BLOCKED**, not passed, because the database test runner could not start.
 
@@ -124,7 +126,7 @@ Dynamic security results are **BLOCKED**, not passed, because the database test 
 | Check | Exact result | Status |
 | --- | --- | --- |
 | `supabase --version` | PowerShell: `supabase` is not recognized. | BLOCKED — CLI unavailable. |
-| `supabase test db` | PowerShell: `supabase` is not recognized. | BLOCKED — RLS tests did not run. |
+| `supabase test db` | PowerShell: `supabase` is not recognized. | BLOCKED — SQL/RLS tests did not run. |
 | `docker version` / `docker info` | Docker failed to connect to `npipe:////./pipe/dockerDesktopLinuxEngine`; the system cannot find the file specified. | BLOCKED — Docker daemon unavailable. |
 | Browser discovery | CUA returned `browsers: []`; browser creation returned `No browser is available`. | BLOCKED — manual/browser checks did not run. |
 
@@ -132,7 +134,11 @@ Dynamic security results are **BLOCKED**, not passed, because the database test 
 
 ### Browser public configuration
 
-Supply only the Supabase project URL and the publishable browser key in the local `supabase-config.js` values:
+Create the ignored local `supabase-config.js` from the tracked example, then supply only the Supabase project URL and publishable browser key:
+
+```powershell
+Copy-Item supabase-config.example.js supabase-config.js
+```
 
 ```js
 window.TAMARA_SUPABASE_CONFIG = {
@@ -142,6 +148,15 @@ window.TAMARA_SUPABASE_CONFIG = {
 ```
 
 Do not put a service-role key, database password, access token, or other backend credential in this file, HTML, JavaScript, logs, or image URLs. Keep the local change out of commits unless the project intentionally wants the public values versioned.
+
+With `supabase-config.js` absent, `index.html` and `admin.html` load the blank tracked example first: the public site uses its static fallback and the admin page shows setup guidance. The local config is ignored by `/supabase-config.js` in `.gitignore`; verify with:
+
+```powershell
+git check-ignore -v supabase-config.js
+git ls-files supabase-config.js supabase-config.example.js
+```
+
+Expected: an ignore rule for `supabase-config.js`, no indexed `supabase-config.js`, and `supabase-config.example.js` listed.
 
 ### Local-only importer procedure
 
@@ -158,11 +173,40 @@ Remove-Item Env:SUPABASE_SERVICE_ROLE_KEY
 
 The first command remains safe without credentials; the non-dry-run import requires the local environment values. Never use the service-role key in browser code or commit it.
 
+### Storage API-level smoke procedure
+
+The SQL file `supabase/tests/property-admin.sql` checks RLS/policy behavior by querying and mutating `storage.objects` under anonymous, non-admin, and admin database roles. Those assertions are **not** API-level upload/delete tests: they do not prove that the Storage HTTP API accepts a real multipart/binary upload and subsequent object deletion through the client-facing endpoint.
+
+When Docker, a local Supabase stack or configured project, and an authenticated admin session are available, run the SQL checks and then exercise the Storage API separately:
+
+```powershell
+supabase start
+supabase test db
+
+# Set only in the local process; do not commit or print the values.
+$env:SUPABASE_URL = '<project URL>'
+$env:SUPABASE_PUBLISHABLE_KEY = '<publishable key>'
+$env:SUPABASE_ACCESS_TOKEN = '<authenticated admin access token>'
+$storagePath = 'properties/api-smoke/api-smoke.jpg'
+
+Invoke-RestMethod -Method Post `
+  -Uri "$env:SUPABASE_URL/storage/v1/object/property-images/$storagePath" `
+  -Headers @{ apikey = $env:SUPABASE_PUBLISHABLE_KEY; Authorization = "Bearer $env:SUPABASE_ACCESS_TOKEN" } `
+  -ContentType 'image/jpeg' -InFile '.\assets\imoveis\oficiais\665313-0.jpg'
+
+Invoke-RestMethod -Method Delete `
+  -Uri "$env:SUPABASE_URL/storage/v1/object/property-images/$storagePath" `
+  -Headers @{ apikey = $env:SUPABASE_PUBLISHABLE_KEY; Authorization = "Bearer $env:SUPABASE_ACCESS_TOKEN" }
+```
+
+This API-level procedure is **BLOCKED in the recorded environment**: Supabase CLI is unavailable, Docker is unavailable, no configured project/session exists, and no browser is available for the admin flow. It must not be reported as PASS until both upload and delete return successful API responses and the object is confirmed absent afterward.
+
 ## Commit and branch handoff
 
 - Previous security-boundary fix: `d17f437`.
 - Verification record introduced in `fc8aac8c380ad4faa2174f4553d15dfe570b4d3e` (`fc8aac8`); this added the report.
 - `d898f6d0d2f962072280768de1dfc6c4ece641c7` (`d898f6d`) finalized the report's commit identity and was the final Task 7 tip before Fix Round 1.
 - Fix Round 1 adds the environment-variable redaction regression test, the fragmented allowlist implementation, and the rerunnable command record in `8e19202b0f0f6b33b1f12025cc3e7e92ad04f47c` (`8e19202`).
+- Final review fix adds official-gallery detection/counts, local config ignore/index removal, and the explicit Storage API-level BLOCKED procedure; its final hash is reported after publication.
 - Required remote branches: `agent/sync-property-listings` and `main`.
 - Both branches were at `d898f6d0d2f962072280768de1dfc6c4ece641c7` before Fix Round 1.

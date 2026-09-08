@@ -91,6 +91,30 @@ function safeFileName(value, fallback) {
   return safePathSegment(baseName, fallback).toLowerCase();
 }
 
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Load the official gallery rendered by the public property UI, ordered by numeric suffix. */
+export function loadOfficialGallery(legacyId, repositoryRoot = REPOSITORY_ROOT) {
+  const id = String(legacyId ?? '').trim();
+  rejectReservedPathSegments(id, 'Legacy id');
+  const root = path.resolve(repositoryRoot);
+  const officialDirectory = path.join(root, 'assets', 'imoveis', 'oficiais');
+  if (!fs.existsSync(officialDirectory)) return [];
+
+  const pattern = new RegExp(`^${escapeRegExp(id)}-(\\d+)\\.(jpg|jpeg|png|webp)$`, 'i');
+  return fs.readdirSync(officialDirectory, { withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => {
+      const match = entry.name.match(pattern);
+      return match ? { name: entry.name, index: Number(match[1]) } : null;
+    })
+    .filter(Boolean)
+    .sort((left, right) => left.index - right.index || left.name.localeCompare(right.name))
+    .map(({ name }) => path.relative(root, path.join(officialDirectory, name)).split(path.sep).join('/'));
+}
+
 /** Build stable local-file to storage mappings for one property's gallery. */
 export function buildImageUploadPlan(property = {}, repositoryRoot = REPOSITORY_ROOT) {
   const legacyId = readOptionalProperty(property, 'legacy_id', 'legacyId', 'id');
@@ -101,7 +125,9 @@ export function buildImageUploadPlan(property = {}, repositoryRoot = REPOSITORY_
 
   const root = path.resolve(repositoryRoot);
   const idSegment = safePathSegment(legacyId, 'property');
-  return asArray(property.images).map((image, sortOrder) => {
+  const officialImages = loadOfficialGallery(legacyId, root);
+  const imagePaths = officialImages.length > 0 ? officialImages : asArray(property.images);
+  return imagePaths.map((image, sortOrder) => {
     const relativePath = String(image ?? '').trim();
     if (!relativePath) throw new Error(`Property ${legacyId} has an empty image path`);
     rejectReservedPathSegments(relativePath, 'Image path');
