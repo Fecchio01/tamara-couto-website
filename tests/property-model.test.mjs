@@ -544,6 +544,29 @@ test('redacts service role secrets from provider error details', async () => {
   );
 });
 
+test('redacts service-role environment variable secrets from provider error details', async () => {
+  const query = {
+    select() { return this; },
+    eq() { return this; },
+    order() {
+      return Promise.resolve({
+        data: null,
+        error: { message: 'SUPABASE_SERVICE_ROLE_KEY=do-not-leak-env-value' },
+      });
+    },
+  };
+  const repository = createPropertyRepository({ client: { from() { return query; } } });
+
+  await assert.rejects(
+    repository.listPublished(),
+    (error) => {
+      assert.doesNotMatch(error.message, /do-not-leak-env-value/);
+      assert.match(error.message, /\[redacted\]/);
+      return true;
+    },
+  );
+});
+
 test('reorders property images through repository metadata updates', async () => {
   const calls = [];
   const imageQuery = {

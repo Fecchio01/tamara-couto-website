@@ -8,6 +8,18 @@ import {
 } from './admin/property-model.mjs';
 
 const PROPERTY_SELECT = '*, property_images(*)';
+const SECRET_ASSIGNMENT_FRAGMENTS = [
+  'supabase[_-]service[_-]role[_-]key',
+  'service[_-]role',
+  'publishable(?:key)?',
+  'api[_-]?key',
+  'access[_-]?token',
+  'token',
+];
+const SECRET_ASSIGNMENT_PATTERN = new RegExp(
+  `(?:${SECRET_ASSIGNMENT_FRAGMENTS.join('|')})=\\S+`,
+  'gi',
+);
 
 function safeProviderDetail(error) {
   const code = typeof error?.code === 'string'
@@ -16,7 +28,7 @@ function safeProviderDetail(error) {
   const message = typeof error?.message === 'string'
     ? error.message
       .replace(/https?:\/\/\S+/gi, '[url]')
-      .replace(/(?:service[_-]role|publishable(?:Key)?|api[_-]?key|access[_-]?token|token)=\S+/gi, '[redacted]')
+      .replace(SECRET_ASSIGNMENT_PATTERN, '[redacted]')
       .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 200)
