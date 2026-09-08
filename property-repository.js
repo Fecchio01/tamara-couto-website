@@ -26,6 +26,21 @@ function throwOperationError(operation, error) {
   throw new Error(`${operation} failed${detail ? `: ${detail}` : ''}`);
 }
 
+async function cleanupStorageObjects(storage, paths) {
+  const batchResult = await storage.remove(paths);
+  if (!batchResult?.error) return [];
+
+  const retryResults = await Promise.all(paths.map(async (path) => {
+    try {
+      const result = await storage.remove([path]);
+      return result?.error ? { path, error: result.error } : null;
+    } catch (error) {
+      return { path, error };
+    }
+  }));
+  return retryResults.filter(Boolean);
+}
+
 async function normalizeProperty(row, publicImageUrl) {
   const property = normalizePropertyRow(row, row?.property_images ?? []);
   return {
@@ -137,18 +152,24 @@ export function createPropertyRepository({ client, publicImageUrl } = {}) {
       .eq('property_id', id);
     if (imageQueryError) throwOperationError('Loading property images', imageQueryError);
 
-    const storagePaths = (images ?? []).map((image) => image.storage_path).filter(Boolean);
-    if (storagePaths.length > 0) {
-      const storage = client.storage?.from('property-images');
-      if (!storage || typeof storage.remove !== 'function') {
-        throw new Error('Deleting property images failed: storage removal unavailable');
-      }
-      const { error: storageError } = await storage.remove(storagePaths);
-      if (storageError) throwOperationError('Deleting property images', storageError);
-    }
-
     const { error } = await client.from('properties').delete().eq('id', id);
     if (error) throwOperationError('Deleting property', error);
+
+    const storagePaths = (images ?? []).map((image) => image.storage_path).filter(Boolean);
+    if (storagePaths.length === 0) return;
+
+    const storage = client.storage?.from('property-images');
+    if (!storage || typeof storage.remove !== 'function') {
+      throw new Error(`Deleting property succeeded but storage cleanup is unavailable for ${storagePaths.length} object(s)`);
+    }
+    const failedPaths = await cleanupStorageObjects(storage, storagePaths);
+    if (failedPaths.length > 0) {
+      const detail = safeProviderDetail(failedPaths[0].error);
+      throw new Error(
+        `Deleting property succeeded but storage cleanup failed for ${failedPaths.length} object(s)`
+        + (detail ? `: ${detail}` : ''),
+      );
+    }
   }
 
   async function uploadImage(propertyId, file, sortOrder) {

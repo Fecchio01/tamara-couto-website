@@ -305,9 +305,92 @@ test('removes property storage objects before deleting the property', async () =
 
   await repository.remove('p-remove');
   assert.deepEqual(calls, [
-    ['storage-remove', ['properties/p-remove/a.jpg', 'properties/p-remove/b.jpg']],
     'property-delete',
+    ['storage-remove', ['properties/p-remove/a.jpg', 'properties/p-remove/b.jpg']],
   ]);
+});
+
+test('does not remove storage objects when property deletion fails', async () => {
+  const calls = [];
+  const imageQuery = {
+    select() { return this; },
+    eq() {
+      return Promise.resolve({
+        data: [{ storage_path: 'properties/p-fail/a.jpg' }],
+        error: null,
+      });
+    },
+  };
+  const propertyQuery = {
+    delete() { calls.push('property-delete'); return this; },
+    eq() {
+      return Promise.resolve({
+        data: null,
+        error: { code: '23503', message: 'property delete rejected' },
+      });
+    },
+  };
+  const repository = createPropertyRepository({
+    client: {
+      from(table) {
+        if (table === 'property_images') return imageQuery;
+        if (table === 'properties') return propertyQuery;
+        throw new Error(`unexpected table ${table}`);
+      },
+      storage: {
+        from() {
+          return {
+            remove() {
+              calls.push('storage-remove');
+              return Promise.resolve({ data: null, error: null });
+            },
+          };
+        },
+      },
+    },
+  });
+
+  await assert.rejects(repository.remove('p-fail'), /Deleting property failed: 23503: property delete rejected/);
+  assert.deepEqual(calls, ['property-delete']);
+});
+
+test('reports incomplete storage cleanup after property deletion', async () => {
+  const imageQuery = {
+    select() { return this; },
+    eq() {
+      return Promise.resolve({
+        data: [{ storage_path: 'properties/p-cleanup/a.jpg' }],
+        error: null,
+      });
+    },
+  };
+  const propertyQuery = {
+    delete() { return this; },
+    eq() { return Promise.resolve({ data: [], error: null }); },
+  };
+  const storage = {
+    remove() {
+      return Promise.resolve({
+        data: null,
+        error: { code: 'STORAGE403', message: 'cleanup denied' },
+      });
+    },
+  };
+  const repository = createPropertyRepository({
+    client: {
+      from(table) {
+        if (table === 'property_images') return imageQuery;
+        if (table === 'properties') return propertyQuery;
+        throw new Error(`unexpected table ${table}`);
+      },
+      storage: { from() { return storage; } },
+    },
+  });
+
+  await assert.rejects(
+    repository.remove('p-cleanup'),
+    /Deleting property succeeded but storage cleanup failed for 1 object\(s\): STORAGE403: cleanup denied/,
+  );
 });
 
 test('preserves safe provider error code and message', async () => {

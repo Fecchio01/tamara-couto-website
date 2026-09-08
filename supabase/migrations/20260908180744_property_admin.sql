@@ -258,7 +258,8 @@ create policy "Published property storage objects are readable by everyone"
     and storage.allow_any_operation(array[
       'object.get_public',
       'object.get_authenticated_info',
-      'object.get_authenticated'
+      'object.get_authenticated',
+      'storage.object.sign'
     ])
     and exists (
       select 1

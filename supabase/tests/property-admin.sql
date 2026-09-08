@@ -1,6 +1,6 @@
 begin;
 
-select plan(24);
+select plan(26);
 
 insert into auth.users (
   id,
@@ -61,6 +61,20 @@ select is(
   (select count(*) from storage.objects where name = 'properties/draft-fixture/secret.jpg'),
   0::bigint,
   'anonymous cannot read a draft image'
+);
+
+select set_config('storage.operation', 'storage.object.sign', true);
+
+select results_eq(
+  $$select name from storage.objects where bucket_id = 'property-images' order by name$$,
+  $$values ('properties/published-fixture/cover.jpg')$$,
+  'anonymous can sign a published image'
+);
+
+select is(
+  (select count(*) from storage.objects where name = 'properties/draft-fixture/secret.jpg'),
+  0::bigint,
+  'anonymous cannot sign a draft image'
 );
 
 select set_config('storage.operation', 'object.list', true);
