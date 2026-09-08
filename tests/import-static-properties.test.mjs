@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   loadStaticProperties,
+  loadOfficialGalleryCounts,
   buildPropertyUpsert,
   buildImageUploadPlan,
   filterProperties,
@@ -90,7 +91,7 @@ test('importer builds deterministic image paths from repository-relative files',
 test('importer uses the official rendered galleries in numeric order and falls back to property images', () => {
   const expectedCounts = {
     '665313': 27,
-    '618158': 21,
+    '618158': 19,
     '552642': 13,
     '657241': 29,
     '649637': 29,
@@ -100,6 +101,10 @@ test('importer uses the official rendered galleries in numeric order and falls b
     '697307': 5,
     '698182': 3,
   };
+  assert.deepEqual(
+    Object.fromEntries(loadOfficialGalleryCounts(path.join(repositoryRoot, 'imoveis-ui.js'))),
+    expectedCounts,
+  );
 
   for (const [legacyId, count] of Object.entries(expectedCounts)) {
     const plan = buildImageUploadPlan({
@@ -280,6 +285,7 @@ test('importer dry-run reports the inventory without requiring Supabase credenti
   });
 
   assert.match(output.stdout, /Dry-run: 10 properties planned/);
+  assert.match(output.stdout, /154 images planned/);
   assert.match(output.stdout, /665313/);
   assert.doesNotMatch(output.stdout, /SUPABASE_SERVICE_ROLE_KEY|service_role/i);
 });

@@ -11,6 +11,7 @@ import {
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const REPOSITORY_ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
 const DEFAULT_DATA_FILE = path.join(REPOSITORY_ROOT, 'imoveis-data.js');
+const DEFAULT_UI_FILE = path.join(REPOSITORY_ROOT, 'imoveis-ui.js');
 const IMAGE_BUCKET = 'property-images';
 
 function asArray(value) {
@@ -36,6 +37,19 @@ export function loadStaticProperties(filePath = DEFAULT_DATA_FILE) {
     throw new Error(`Static property data must be an array: ${filePath}`);
   }
   return properties;
+}
+
+/** Read the official gallery counts from the public renderer without executing browser code. */
+export function loadOfficialGalleryCounts(filePath = DEFAULT_UI_FILE) {
+  if (!fs.existsSync(filePath)) return new Map();
+  const source = fs.readFileSync(filePath, 'utf8');
+  const block = source.match(/const\s+officialGalleryCounts\s*=\s*\{([\s\S]*?)\}/)?.[1];
+  if (!block) return new Map();
+
+  return new Map(
+    [...block.matchAll(/["']([^"']+)["']\s*:\s*(\d+)/g)]
+      .map((match) => [match[1], Number(match[2])]),
+  );
 }
 
 /** Convert one legacy row into the properties table payload. */
@@ -101,7 +115,8 @@ export function loadOfficialGallery(legacyId, repositoryRoot = REPOSITORY_ROOT) 
   rejectReservedPathSegments(id, 'Legacy id');
   const root = path.resolve(repositoryRoot);
   const officialDirectory = path.join(root, 'assets', 'imoveis', 'oficiais');
-  if (!fs.existsSync(officialDirectory)) return [];
+  const officialCount = loadOfficialGalleryCounts(path.join(root, 'imoveis-ui.js')).get(id) ?? 0;
+  if (!officialCount || !fs.existsSync(officialDirectory)) return [];
 
   const pattern = new RegExp(`^${escapeRegExp(id)}-(\\d+)\\.(jpg|jpeg|png|webp)$`, 'i');
   return fs.readdirSync(officialDirectory, { withFileTypes: true })
@@ -110,7 +125,7 @@ export function loadOfficialGallery(legacyId, repositoryRoot = REPOSITORY_ROOT) 
       const match = entry.name.match(pattern);
       return match ? { name: entry.name, index: Number(match[1]) } : null;
     })
-    .filter(Boolean)
+    .filter((entry) => entry && entry.index < officialCount)
     .sort((left, right) => left.index - right.index || left.name.localeCompare(right.name))
     .map(({ name }) => path.relative(root, path.join(officialDirectory, name)).split(path.sep).join('/'));
 }
@@ -201,7 +216,8 @@ function buildDryRunRecord(property, repositoryRoot) {
 
 export function printDryRun(properties, { repositoryRoot = REPOSITORY_ROOT, output = console.log } = {}) {
   const records = properties.map((property) => buildDryRunRecord(property, repositoryRoot));
-  output(`Dry-run: ${records.length} properties planned`);
+  const imageCount = records.reduce((total, record) => total + record.image_count, 0);
+  output(`Dry-run: ${records.length} properties planned, ${imageCount} images planned`);
   records.slice(0, 3).forEach((record, index) => {
     output(`Plan ${index + 1}: ${JSON.stringify(record)}`);
   });

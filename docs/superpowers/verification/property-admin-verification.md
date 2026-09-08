@@ -44,9 +44,9 @@ Exact command:
 node scripts/import-static-properties.mjs --dry-run
 ```
 
-Result: PASS — `Dry-run: 10 properties planned`, with no Supabase connection and no file mutation. The official rendered gallery counts are `665313=27`, `618158=21`, `552642=13`, `657241=29`, `649637=29`, `689393=16`, `657381=1`, `697256=12`, `697307=5`, and `698182=3`, totaling 156 images. The output contains deterministic `properties/<legacy_id>/...` storage paths in numeric gallery order. When no official gallery exists, the importer falls back to `property.images`.
+Result: PASS — `Dry-run: 10 properties planned, 154 images planned`, with no Supabase connection and no file mutation. The official rendered gallery counts are `665313=27`, `618158=19`, `552642=13`, `657241=29`, `649637=29`, `689393=16`, `657381=1`, `697256=12`, `697307=5`, and `698182=3`, totaling 154 images. The output contains deterministic `properties/<legacy_id>/...` storage paths in numeric gallery order. When no official gallery exists, the importer falls back to `property.images`.
 
-The official-gallery inventory was checked from `assets/imoveis/oficiais/<legacy_id>-<n>.jpg`; the files render from `imoveis-ui.js` using the same numeric suffixes. The dry-run now plans those files instead of only the legacy ten-image arrays.
+The official-gallery inventory was checked from `assets/imoveis/oficiais/<legacy_id>-<n>.jpg`; the importer reads the `officialGalleryCounts` map directly from `imoveis-ui.js` and limits numeric suffixes to each declared count. The dry-run now plans those files instead of every discovered file or only the legacy ten-image arrays.
 
 ## Exact rerunnable security scans
 
