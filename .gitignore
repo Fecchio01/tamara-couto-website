@@ -1,3 +1,7 @@
 .env
 .env.*
 !.env.example
+
+# Keep local importer credentials outside version control.
+scripts/.env
+scripts/.env.*
