@@ -389,8 +389,121 @@ test('reports incomplete storage cleanup after property deletion', async () => {
 
   await assert.rejects(
     repository.remove('p-cleanup'),
-    /Deleting property succeeded but storage cleanup failed for 1 object\(s\): STORAGE403: cleanup denied/,
+    /Deleting property storage failed for 1 object\(s\): properties\/p-cleanup\/a\.jpg: STORAGE403: cleanup denied/,
   );
+});
+
+test('retries individual storage cleanup when batch removal throws', async () => {
+  const calls = [];
+  const imageQuery = {
+    select() { return this; },
+    eq() {
+      return Promise.resolve({
+        data: [{ storage_path: 'properties/p-retry/a.jpg' }, { storage_path: 'properties/p-retry/b.jpg' }],
+        error: null,
+      });
+    },
+  };
+  const propertyQuery = {
+    delete() { calls.push('property-delete'); return this; },
+    eq() { return Promise.resolve({ data: [], error: null }); },
+  };
+  let batchAttempt = true;
+  const storage = {
+    remove(paths) {
+      calls.push(['storage-remove', paths]);
+      if (batchAttempt) {
+        batchAttempt = false;
+        return Promise.reject(new Error('batch unavailable'));
+      }
+      return Promise.resolve({ data: paths, error: null });
+    },
+  };
+  const repository = createPropertyRepository({
+    client: {
+      from(table) {
+        if (table === 'property_images') return imageQuery;
+        if (table === 'properties') return propertyQuery;
+        throw new Error(`unexpected table ${table}`);
+      },
+      storage: { from() { return storage; } },
+    },
+  });
+
+  await repository.remove('p-retry');
+  assert.deepEqual(calls, [
+    'property-delete',
+    ['storage-remove', ['properties/p-retry/a.jpg', 'properties/p-retry/b.jpg']],
+    ['storage-remove', ['properties/p-retry/a.jpg']],
+    ['storage-remove', ['properties/p-retry/b.jpg']],
+  ]);
+});
+
+test('does not remove storage when image metadata deletion fails', async () => {
+  const calls = [];
+  const imageQuery = {
+    delete() { calls.push('sql-delete'); return this; },
+    eq() {
+      return Promise.resolve({
+        data: null,
+        error: { code: '23503', message: 'metadata delete rejected' },
+      });
+    },
+  };
+  const storage = {
+    remove() {
+      calls.push('storage-remove');
+      return Promise.resolve({ data: null, error: null });
+    },
+  };
+  const repository = createPropertyRepository({
+    client: {
+      from(table) {
+        if (table === 'property_images') return imageQuery;
+        throw new Error(`unexpected table ${table}`);
+      },
+      storage: { from() { return storage; } },
+    },
+  });
+
+  await assert.rejects(
+    repository.removeImage({ id: 'image-fail', storage_path: 'properties/p-fail/a.jpg' }),
+    /Deleting property image record failed: 23503: metadata delete rejected/,
+  );
+  assert.deepEqual(calls, ['sql-delete']);
+});
+
+test('reports a safe pending path when image storage cleanup remains incomplete', async () => {
+  const calls = [];
+  const imageQuery = {
+    delete() { calls.push('sql-delete'); return this; },
+    eq() { return Promise.resolve({ data: [], error: null }); },
+  };
+  const storage = {
+    remove(paths) {
+      calls.push(['storage-remove', paths]);
+      return Promise.reject(Object.assign(new Error('storage unavailable'), { code: 'STORAGE503' }));
+    },
+  };
+  const repository = createPropertyRepository({
+    client: {
+      from(table) {
+        if (table === 'property_images') return imageQuery;
+        throw new Error(`unexpected table ${table}`);
+      },
+      storage: { from() { return storage; } },
+    },
+  });
+
+  await assert.rejects(
+    repository.removeImage({ id: 'image-storage-fail', storage_path: 'properties/p-image/a.jpg' }),
+    /Deleting property image storage failed for 1 object\(s\): properties\/p-image\/a\.jpg: STORAGE503: storage unavailable/,
+  );
+  assert.deepEqual(calls, [
+    'sql-delete',
+    ['storage-remove', ['properties/p-image/a.jpg']],
+    ['storage-remove', ['properties/p-image/a.jpg']],
+  ]);
 });
 
 test('preserves safe provider error code and message', async () => {
