@@ -224,6 +224,14 @@ function preflightImagePlans(plans) {
   });
 }
 
+export function preflightProperties(properties, repositoryRoot = REPOSITORY_ROOT) {
+  return properties.map((property) => ({
+    property,
+    payload: buildPropertyUpsert(property),
+    plans: preflightImagePlans(buildImageUploadPlan(property, repositoryRoot)),
+  }));
+}
+
 function createSupabaseRestClient({ url, serviceRoleKey, fetchImpl = globalThis.fetch }) {
   if (typeof fetchImpl !== 'function') throw new Error('Node fetch is unavailable');
   const baseUrl = url.replace(/\/$/, '');
@@ -303,17 +311,16 @@ export async function importProperties(properties, {
   output = console.log,
 } = {}) {
   if (!url || !serviceRoleKey) throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for import');
+  const preparedProperties = preflightProperties(properties, repositoryRoot);
   const client = createSupabaseRestClient({ url, serviceRoleKey, fetchImpl });
   let imageCount = 0;
 
-  for (const property of properties) {
-    const plans = buildImageUploadPlan(property, repositoryRoot);
-    const preparedPlans = preflightImagePlans(plans);
-    const row = await client.upsertProperty(buildPropertyUpsert(property));
+  for (const { property, payload, plans } of preparedProperties) {
+    const row = await client.upsertProperty(payload);
     const existingImages = await client.listImages(row.id);
     const existingPaths = new Set((existingImages ?? []).map((image) => image.storage_path));
     if (replaceImages) {
-      const plannedPaths = new Set(preparedPlans.map((plan) => plan.storagePath));
+      const plannedPaths = new Set(plans.map((plan) => plan.storagePath));
       for (const image of existingImages ?? []) {
         if (plannedPaths.has(image.storage_path)) continue;
         await client.deleteImageRecord(image.id);
@@ -321,7 +328,7 @@ export async function importProperties(properties, {
       }
     }
 
-    for (const plan of preparedPlans) {
+    for (const plan of plans) {
       if (!replaceImages && existingPaths.has(plan.storagePath)) continue;
       await client.uploadObject(plan.storagePath, plan.contents, plan.contentType, replaceImages);
       await client.upsertImage({
@@ -332,7 +339,7 @@ export async function importProperties(properties, {
       });
       imageCount += 1;
     }
-    output(`Imported ${row.legacy_id ?? property.id} (${preparedPlans.length} images planned)`);
+    output(`Imported ${row.legacy_id ?? property.id} (${plans.length} images planned)`);
   }
 
   return { propertyCount: properties.length, imageCount };

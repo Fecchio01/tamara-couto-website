@@ -183,6 +183,51 @@ test('replace-images preflight rejects ENOENT before deleting old images', async
   assert.deepEqual(requests.filter((request) => request.method === 'DELETE'), []);
 });
 
+test('replace-images preflights every property before mutating the first one', async () => {
+  const requests = [];
+  const fetchImpl = async (url, init = {}) => {
+    requests.push({ url, method: init.method ?? 'GET', body: init.body });
+    if (url.includes('/rest/v1/properties?')) {
+      const [payload] = JSON.parse(init.body);
+      return response([{ id: `database-${payload.legacy_id}`, legacy_id: payload.legacy_id }]);
+    }
+    if (url.includes('/rest/v1/property_images?property_id=')) {
+      return response([{ id: 'old-first-image', storage_path: 'properties/first/old.jpg' }]);
+    }
+    if (url.includes('/rest/v1/property_images?on_conflict=')) {
+      return response([{}]);
+    }
+    return response({});
+  };
+
+  await assert.rejects(
+    importProperties([
+      {
+        id: 'first',
+        title: 'Primeiro imóvel',
+        type: 'Casa',
+        images: ['assets/imoveis/imovel-0/foto-0.jpg'],
+      },
+      {
+        id: 'second',
+        title: 'Segundo imóvel',
+        type: 'Casa',
+        images: ['assets/imoveis/imovel-0/file-does-not-exist.jpg'],
+      },
+    ], {
+      repositoryRoot,
+      url: 'https://supabase.example.test',
+      serviceRoleKey: 'test-only-secret',
+      replaceImages: true,
+      fetchImpl,
+      output: () => {},
+    }),
+    (error) => error?.code === 'ENOENT',
+  );
+
+  assert.deepEqual(requests.filter((request) => request.method === 'DELETE'), []);
+});
+
 test('importer dry-run reports the inventory without requiring Supabase credentials', async () => {
   const { spawn } = await import('node:child_process');
   const output = await new Promise((resolve, reject) => {
