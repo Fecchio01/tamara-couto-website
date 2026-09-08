@@ -23,7 +23,7 @@ create index properties_updated_at_idx on public.properties (updated_at desc);
 create table public.property_images (
   id uuid primary key default gen_random_uuid(),
   property_id uuid not null references public.properties (id) on delete cascade,
-  storage_path text not null unique,
+  storage_path text not null unique check (storage_path like 'properties/%'),
   sort_order integer not null default 0 check (sort_order >= 0),
   alt_text text,
   created_at timestamptz not null default timezone('utc', now())
@@ -31,6 +31,23 @@ create table public.property_images (
 
 create index property_images_property_order_idx
   on public.property_images (property_id, sort_order, id);
+
+create or replace function public.set_property_updated_at()
+returns trigger
+language plpgsql
+security invoker
+set search_path = public
+as $$
+begin
+  new.updated_at = timezone('utc', now());
+  return new;
+end;
+$$;
+
+create trigger properties_set_updated_at
+before update on public.properties
+for each row
+execute function public.set_property_updated_at();
 
 create table public.admin_users (
   user_id uuid primary key references auth.users (id) on delete cascade,
@@ -192,9 +209,38 @@ create policy "Admins can read their admin membership"
   to authenticated
   using (user_id = (select auth.uid()) and role = 'admin');
 
-insert into storage.buckets (id, name, public)
-values ('property-images', 'property-images', false)
-on conflict (id) do nothing;
+do $$
+declare
+  bucket_is_public boolean;
+begin
+  select bucket.public
+    into bucket_is_public
+    from storage.buckets as bucket
+   where bucket.id = 'property-images';
+
+  if found then
+    if bucket_is_public is distinct from false then
+      raise exception 'property-images bucket must remain private';
+    end if;
+  else
+    insert into storage.buckets (id, name, public)
+    values ('property-images', 'property-images', false);
+  end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+      from storage.buckets as bucket
+     where bucket.id = 'property-images'
+       and bucket.public is false
+  ) then
+    raise exception 'property-images bucket privacy assertion failed';
+  end if;
+end;
+$$;
 
 alter table storage.objects enable row level security;
 grant select, insert, update, delete on table storage.objects to anon, authenticated;
@@ -205,6 +251,11 @@ create policy "Published property storage objects are readable by everyone"
   to public
   using (
     bucket_id = 'property-images'
+    and storage.allow_any_operation(array[
+      'object.get_public',
+      'object.get_authenticated_info',
+      'object.get_authenticated'
+    ])
     and exists (
       select 1
       from public.property_images
