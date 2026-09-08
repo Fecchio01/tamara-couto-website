@@ -207,6 +207,6 @@ This API-level procedure is **BLOCKED in the recorded environment**: Supabase CL
 - Verification record introduced in `fc8aac8c380ad4faa2174f4553d15dfe570b4d3e` (`fc8aac8`); this added the report.
 - `d898f6d0d2f962072280768de1dfc6c4ece641c7` (`d898f6d`) finalized the report's commit identity and was the final Task 7 tip before Fix Round 1.
 - Fix Round 1 adds the environment-variable redaction regression test, the fragmented allowlist implementation, and the rerunnable command record in `8e19202b0f0f6b33b1f12025cc3e7e92ad04f47c` (`8e19202`).
-- Final review fix adds official-gallery detection/counts, local config ignore/index removal, and the explicit Storage API-level BLOCKED procedure; its final hash is reported after publication.
+- Final review fix adds official-gallery detection/counts, local config ignore/index removal, and the explicit Storage API-level BLOCKED procedure in `86787927536e39d3d87c552bcfe5ba3e2debcf82` (`8678792`).
 - Required remote branches: `agent/sync-property-listings` and `main`.
 - Both branches were at `d898f6d0d2f962072280768de1dfc6c4ece641c7` before Fix Round 1.
