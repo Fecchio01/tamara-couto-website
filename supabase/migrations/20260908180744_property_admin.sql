@@ -246,8 +246,8 @@ begin
 end;
 $$;
 
-alter table storage.objects enable row level security;
-grant select, insert, update, delete on table storage.objects to anon, authenticated;
+-- `storage.objects` is managed by Supabase Storage and already has RLS enabled.
+-- Hosted projects do not allow altering ownership, grants, or RLS on this table.
 
 create policy "Published property storage objects are readable by everyone"
   on storage.objects
