@@ -135,7 +135,17 @@ small { color: var(--admin-muted); font-size: 0.72rem; }
 .property-row-actions .button { padding: 0.55rem 0.7rem; font-size: 0.65rem; }
 .button-danger { color: var(--admin-danger); background: transparent; border: 1px solid #e4c8c4; }
 .button-danger:hover { border-color: var(--admin-danger); background: #fff7f6; }
-.property-editor { margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--admin-line); }
+.property-editor { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--admin-line); }
+.property-editor > summary { list-style: none; cursor: pointer; }
+.property-editor > summary::-webkit-details-marker { display: none; }
+.editor-summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem 0; }
+.editor-summary .state-eyebrow { margin-bottom: 0.25rem; }
+.editor-summary strong { display: block; font-size: 0.95rem; }
+.editor-summary-hint { color: var(--admin-primary-dark); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.property-editor[open] .editor-summary-hint::after { content: 'Fechar'; }
+.property-editor:not([open]) .editor-summary-hint::after { content: 'Abrir'; }
+.editor-secondary-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.55rem; flex-wrap: wrap; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--admin-line); }
+.editor-actions-label { margin-right: auto; color: var(--admin-muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .editor-heading { margin-bottom: 1rem; }
 .editor-heading h2 { margin-bottom: 0; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1rem; }
@@ -174,6 +184,8 @@ small { color: var(--admin-muted); font-size: 0.72rem; }
     .property-row-media img, .property-row-media-placeholder { width: 4.5rem; }
     .property-row-meta { justify-content: start; }
     .property-row-actions { justify-content: start; }
+    .editor-secondary-actions { align-items: stretch; flex-direction: column; }
+    .editor-actions-label { margin-right: 0; }
     .form-grid { display: block; }
     .checkbox-field { padding-top: 0; margin-bottom: 1rem; }
 }

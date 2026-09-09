@@ -96,7 +96,14 @@
                 <p class="property-empty" id="propertyEmpty" hidden>Nenhum imóvel encontrado com esses filtros.</p>
                 <div class="property-list" id="propertyList" aria-live="polite"></div>
 
-                <section class="property-editor" aria-labelledby="propertyFormHeading">
+                <details class="property-editor" id="propertyEditorPanel" aria-labelledby="propertyFormHeading">
+                    <summary class="editor-summary">
+                        <span>
+                            <span class="state-eyebrow">Cadastro</span>
+                            <strong id="editorSummaryTitle">Selecione um imóvel para editar</strong>
+                        </span>
+                        <span class="editor-summary-hint" aria-hidden="true"></span>
+                    </summary>
                     <div class="editor-heading">
                         <span class="state-eyebrow">Cadastro</span>
                         <h2 id="propertyFormHeading">Novo imóvel</h2>
@@ -182,6 +189,12 @@
                             <button class="button button-secondary" type="submit" data-save-status="draft">Salvar rascunho</button>
                             <button class="button button-primary" type="submit" data-save-status="published">Salvar e publicar</button>
                         </div>
+                        <div class="editor-secondary-actions" id="editorActions" aria-label="Ações do imóvel">
+                            <span class="editor-actions-label">Ações deste imóvel</span>
+                            <button class="button button-secondary" type="button" id="publishPropertyButton" data-editor-action="publish" disabled>Publicar</button>
+                            <button class="button button-secondary" type="button" id="archivePropertyButton" data-editor-action="archive" disabled>Arquivar</button>
+                            <button class="button button-danger" type="button" id="deletePropertyButton" data-editor-action="delete" disabled>Excluir</button>
+                        </div>
                     </form>
 
                     <div class="image-editor" aria-labelledby="imageEditorHeading">
@@ -195,7 +208,7 @@
                         <p class="property-empty" id="imageEmpty">Salve o imóvel para adicionar fotos.</p>
                         <ol class="image-list" id="imageList"></ol>
                     </div>
-                </section>
+                </details>
             </section>
         </section>
     </main>

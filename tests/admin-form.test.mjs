@@ -4,6 +4,7 @@ import {
   fillPropertyForm,
   readPropertyForm,
   renderPropertyList,
+  updateEditorActions,
 } from '../admin.js';
 
 function createForm(values = {}) {
@@ -127,6 +128,24 @@ test('shows the existing site photo in each admin property row', () => {
   } finally {
     globalThis.window = previousWindow;
   }
+});
+
+test('keeps secondary property actions disabled until an existing property is selected', () => {
+  const elements = {
+    publishPropertyButton: { disabled: false, textContent: '' },
+    archivePropertyButton: { disabled: false },
+    deletePropertyButton: { disabled: false },
+  };
+
+  updateEditorActions(elements, null);
+  assert.equal(elements.publishPropertyButton.disabled, true);
+  assert.equal(elements.archivePropertyButton.disabled, true);
+  assert.equal(elements.deletePropertyButton.disabled, true);
+
+  updateEditorActions(elements, { id: 'property-1', status: 'published' });
+  assert.equal(elements.publishPropertyButton.disabled, true);
+  assert.equal(elements.archivePropertyButton.disabled, false);
+  assert.equal(elements.deletePropertyButton.disabled, false);
 });
 
 test('fills required, optional legacy, and image-independent form fields', () => {

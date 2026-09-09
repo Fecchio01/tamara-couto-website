@@ -121,6 +121,19 @@ function staticPropertyFor(property) {
   return staticProperties.find((item) => String(item?.id ?? '') === String(key ?? '')) ?? null;
 }
 
+export function updateEditorActions(elements, property) {
+  const hasProperty = Boolean(property?.id);
+  if (elements?.publishPropertyButton) {
+    elements.publishPropertyButton.disabled = !hasProperty || property.status === 'published';
+  }
+  if (elements?.archivePropertyButton) {
+    elements.archivePropertyButton.disabled = !hasProperty || property.status === 'archived';
+  }
+  if (elements?.deletePropertyButton) {
+    elements.deletePropertyButton.disabled = !hasProperty;
+  }
+}
+
 export function renderPropertyList(properties = [], root = globalThis.document) {
   const list = root?.getElementById?.('propertyList');
   const empty = root?.getElementById?.('propertyEmpty');
@@ -172,28 +185,6 @@ export function renderPropertyList(properties = [], root = globalThis.document) 
     edit.dataset.action = 'edit';
     edit.textContent = 'Editar';
     actions.append(edit);
-    if (property.status !== 'published') {
-      const publish = root.createElement('button');
-      publish.type = 'button';
-      publish.className = 'button button-primary';
-      publish.dataset.action = 'publish';
-      publish.textContent = 'Publicar';
-      actions.append(publish);
-    }
-    if (property.status !== 'archived') {
-      const archive = root.createElement('button');
-      archive.type = 'button';
-      archive.className = 'button button-secondary';
-      archive.dataset.action = 'archive';
-      archive.textContent = 'Arquivar';
-      actions.append(archive);
-    }
-    const remove = root.createElement('button');
-    remove.type = 'button';
-    remove.className = 'button button-danger';
-    remove.dataset.action = 'delete';
-    remove.textContent = 'Excluir';
-    actions.append(remove);
     meta.append(actions);
     item.append(media, details, meta);
     list.append(item);
@@ -315,8 +306,11 @@ async function loadPropertyIntoForm(propertyId) {
     ?? await context.repository.getById(propertyId);
   if (!property) return;
   context.activeProperty = property;
+  context.elements.propertyEditorPanel?.setAttribute('open', '');
   fillPropertyForm(context.elements.propertyForm, property);
   context.elements.formHeading.textContent = 'Editar imóvel';
+  if (context.elements.editorSummaryTitle) context.elements.editorSummaryTitle.textContent = 'Editar imóvel selecionado';
+  updateEditorActions(context.elements, property);
   renderPropertyImages(property);
   context.elements.propertyForm.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
 }
@@ -329,6 +323,8 @@ async function refreshActiveProperty() {
   context.activeProperty = property;
   context.properties = context.properties.map((item) => item.id === property.id ? property : item);
   fillPropertyForm(context.elements.propertyForm, property);
+  if (context.elements.editorSummaryTitle) context.elements.editorSummaryTitle.textContent = 'Editar imóvel selecionado';
+  updateEditorActions(context.elements, property);
   renderPropertyImages(property);
 }
 
@@ -352,8 +348,11 @@ export async function handlePropertySubmit(event) {
   try {
     const saved = await context.repository.save(input, currentPropertyId(form));
     context.activeProperty = saved;
+    context.elements.propertyEditorPanel?.setAttribute('open', '');
     fillPropertyForm(form, saved);
     context.elements.formHeading.textContent = 'Editar imóvel';
+    if (context.elements.editorSummaryTitle) context.elements.editorSummaryTitle.textContent = 'Editar imóvel selecionado';
+    updateEditorActions(context.elements, saved);
     await refreshPropertyList();
     renderPropertyImages(saved);
     showPropertyMessage(input.status === 'published' ? 'Imóvel publicado.' : 'Rascunho salvo.');
@@ -404,8 +403,11 @@ function bindPropertyDashboard(context) {
   elements.propertyForm?.addEventListener('submit', handlePropertySubmit);
   elements.newPropertyButton?.addEventListener('click', () => {
     context.activeProperty = null;
+    elements.propertyEditorPanel?.setAttribute('open', '');
     fillPropertyForm(elements.propertyForm, { status: 'draft' });
     elements.formHeading.textContent = 'Novo imóvel';
+    if (elements.editorSummaryTitle) elements.editorSummaryTitle.textContent = 'Novo imóvel';
+    updateEditorActions(elements, null);
     renderPropertyImages({});
     showPropertyMessage('');
     elements.propertyForm.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
@@ -433,17 +435,23 @@ function bindPropertyDashboard(context) {
     const propertyId = row.dataset.propertyId;
     const property = context.properties.find((item) => item.id === propertyId);
     if (!property) return;
-    const action = actionButton.dataset.action;
-    if (action === 'edit') return loadPropertyIntoForm(propertyId);
+    if (actionButton.dataset.action === 'edit') await loadPropertyIntoForm(propertyId);
+  });
+  elements.editorActions?.addEventListener('click', async (event) => {
+    const actionButton = event.target.closest?.('[data-editor-action]');
+    const property = context.activeProperty;
+    if (!actionButton || !property?.id) return;
+    const action = actionButton.dataset.editorAction;
     if (action === 'delete') {
       if (typeof globalThis.confirm === 'function' && !globalThis.confirm('Excluir este imóvel e suas fotos?')) return;
       try {
-        await context.repository.remove(propertyId);
-        if (context.activeProperty?.id === propertyId) {
-          context.activeProperty = null;
-          fillPropertyForm(elements.propertyForm, { status: 'draft' });
-          renderPropertyImages({});
-        }
+        await context.repository.remove(property.id);
+        context.activeProperty = null;
+        fillPropertyForm(elements.propertyForm, { status: 'draft' });
+        elements.formHeading.textContent = 'Novo imóvel';
+        if (elements.editorSummaryTitle) elements.editorSummaryTitle.textContent = 'Novo imóvel';
+        updateEditorActions(elements, null);
+        renderPropertyImages({});
         await refreshPropertyList();
         showPropertyMessage('Imóvel excluído.');
       } catch (error) {
@@ -453,12 +461,16 @@ function bindPropertyDashboard(context) {
     }
     const status = action === 'publish' ? 'published' : action === 'archive' ? 'archived' : null;
     if (!status) return;
+    actionButton.disabled = true;
     try {
-      await context.repository.setStatus(propertyId, status);
+      await context.repository.setStatus(property.id, status);
+      await refreshActiveProperty();
       await refreshPropertyList();
       showPropertyMessage(status === 'published' ? 'Imóvel publicado.' : 'Imóvel arquivado.');
     } catch (error) {
       showPropertyMessage(safePropertyError(error, SAFE_MESSAGES.STATUS_PROPERTY_FAILED), 'error');
+    } finally {
+      updateEditorActions(elements, context.activeProperty);
     }
   });
   elements.imageUpload?.addEventListener('change', (event) => {
@@ -637,8 +649,14 @@ function getPageElements(root = globalThis.document) {
     propertyForm: root.getElementById('propertyForm'),
     filtersForm: root.getElementById('propertyFilters'),
     newPropertyButton: root.getElementById('newPropertyButton'),
+    propertyEditorPanel: root.getElementById('propertyEditorPanel'),
+    editorSummaryTitle: root.getElementById('editorSummaryTitle'),
     formHeading: root.getElementById('propertyFormHeading'),
     propertyMessage: root.getElementById('propertyMessage'),
+    editorActions: root.getElementById('editorActions'),
+    publishPropertyButton: root.getElementById('publishPropertyButton'),
+    archivePropertyButton: root.getElementById('archivePropertyButton'),
+    deletePropertyButton: root.getElementById('deletePropertyButton'),
     imageUpload: root.getElementById('imageUpload'),
     imageList: root.getElementById('imageList'),
     imageEmpty: root.getElementById('imageEmpty'),
@@ -824,6 +842,7 @@ if (globalThis.window) {
     readPropertyForm,
     renderPropertyList,
     renderAdminState,
+    updateEditorActions,
     requireAdminSession,
     signIn,
     signOut,
