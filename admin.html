@@ -104,6 +104,7 @@
                     <form id="propertyForm" novalidate>
                         <input type="hidden" name="propertyId">
                         <div class="form-grid">
+                            <div class="form-section-label form-field-wide">Informações do anúncio</div>
                             <div class="form-field form-field-wide">
                                 <label for="propertyTitle">Título</label>
                                 <input id="propertyTitle" name="title" required>
@@ -121,6 +122,7 @@
                                     <option value="archived">Arquivado</option>
                                 </select>
                             </div>
+                            <div class="form-section-label form-field-wide">Localização</div>
                             <div class="form-field">
                                 <label for="propertyNeighborhood">Bairro / região</label>
                                 <input id="propertyNeighborhood" name="neighborhood">
@@ -134,6 +136,7 @@
                                 <input id="propertyPrice" name="price" inputmode="decimal" placeholder="R$ 850.000,00">
                                 <small>Rascunhos podem ficar sem preço.</small>
                             </div>
+                            <div class="form-section-label form-field-wide">Detalhes do imóvel</div>
                             <div class="form-field form-field-wide">
                                 <label for="propertyDescription">Descrição</label>
                                 <textarea id="propertyDescription" name="description" rows="4"></textarea>
@@ -154,8 +157,9 @@
                                 <label for="propertyMapUrl">URL do mapa</label>
                                 <input id="propertyMapUrl" name="mapUrl" type="url">
                             </div>
+                            <div class="form-section-label form-field-wide">Controle interno</div>
                             <div class="form-field">
-                                <label for="propertyLegacyId">legacy_id</label>
+                                <label for="propertyLegacyId">Código do imóvel</label>
                                 <input id="propertyLegacyId" name="legacy_id">
                             </div>
                             <div class="form-field checkbox-field">
@@ -166,7 +170,7 @@
                                 <input id="propertyPurpose" name="purpose" placeholder="Venda ou aluguel">
                             </div>
                             <div class="form-field">
-                                <label for="propertySourceUrl">sourceUrl</label>
+                                <label for="propertySourceUrl">Link da origem</label>
                                 <input id="propertySourceUrl" name="sourceUrl" type="url">
                             </div>
                             <div class="form-field form-field-wide">
@@ -187,7 +191,7 @@
                         </div>
                         <label class="upload-label" for="imageUpload">Adicionar fotos</label>
                         <input id="imageUpload" type="file" accept="image/*" multiple disabled>
-                        <p class="image-help">Imagens até 10 MB. Use as setas para reordenar.</p>
+                        <p class="image-help">As fotos atuais do site aparecem aqui para conferência. Novas imagens de até 10 MB podem ser adicionadas e reordenadas depois do envio.</p>
                         <p class="property-empty" id="imageEmpty">Salve o imóvel para adicionar fotos.</p>
                         <ol class="image-list" id="imageList"></ol>
                     </div>
@@ -198,6 +202,7 @@
 
     <script src="supabase-config.example.js"></script>
     <script src="supabase-config.js"></script>
+    <script src="imoveis-data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.min.js"></script>
     <script type="module" src="admin.js"></script>
 </body>

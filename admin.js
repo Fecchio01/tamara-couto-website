@@ -115,6 +115,12 @@ function textElement(root, tag, text) {
   return element;
 }
 
+function staticPropertyFor(property) {
+  const key = property?.legacy_id ?? property?.id;
+  const staticProperties = globalThis.window?.IMOVEIS_DATA ?? globalThis.IMOVEIS_DATA ?? [];
+  return staticProperties.find((item) => String(item?.id ?? '') === String(key ?? '')) ?? null;
+}
+
 export function renderPropertyList(properties = [], root = globalThis.document) {
   const list = root?.getElementById?.('propertyList');
   const empty = root?.getElementById?.('propertyEmpty');
@@ -127,6 +133,22 @@ export function renderPropertyList(properties = [], root = globalThis.document) 
     const item = root.createElement('article');
     item.className = 'property-row';
     item.dataset.propertyId = property.id ?? '';
+
+    const staticProperty = staticPropertyFor(property);
+    const thumbnail = property.images?.[0] ?? staticProperty?.images?.[0] ?? '';
+    const media = root.createElement('div');
+    media.className = 'property-row-media';
+    if (thumbnail) {
+      const image = root.createElement('img');
+      image.src = thumbnail;
+      image.alt = property.title || 'Foto do imóvel';
+      image.loading = 'lazy';
+      media.append(image);
+    } else {
+      const placeholder = textElement(root, 'span', 'Sem foto');
+      placeholder.className = 'property-row-media-placeholder';
+      media.append(placeholder);
+    }
 
     const details = root.createElement('div');
     details.className = 'property-row-details';
@@ -173,7 +195,7 @@ export function renderPropertyList(properties = [], root = globalThis.document) 
     remove.textContent = 'Excluir';
     actions.append(remove);
     meta.append(actions);
-    item.append(details, meta);
+    item.append(media, details, meta);
     list.append(item);
   }
 }
@@ -210,8 +232,21 @@ function renderPropertyImages(property) {
   const list = context?.elements?.imageList;
   if (!list || !context.root?.createElement) return;
   list.replaceChildren();
-  const images = propertyImages(property);
+  const managedImages = propertyImages(property);
+  const staticImages = staticPropertyFor(property)?.images ?? [];
+  const images = managedImages.length > 0
+    ? managedImages
+    : staticImages.map((publicUrl, index) => ({
+      publicUrl,
+      alt_text: `Foto atual do site ${index + 1}`,
+      staticPreview: true,
+    }));
   context.elements.imageEmpty.hidden = images.length > 0;
+  context.elements.imageEmpty.textContent = managedImages.length > 0
+    ? ''
+    : staticImages.length > 0
+      ? 'Estas são as fotos atuais do site. Adicione novas fotos para começar a gerenciar a galeria no Supabase.'
+      : 'Salve o imóvel para adicionar fotos.';
   context.elements.imageUpload.disabled = !property?.id;
 
   images.forEach((image, index) => {
@@ -224,6 +259,13 @@ function renderPropertyImages(property) {
     preview.loading = 'lazy';
     const controls = context.root.createElement('div');
     controls.className = 'image-controls';
+    if (image.staticPreview) {
+      controls.className += ' image-controls-static';
+      controls.append(textElement(context.root, 'span', 'Foto atual do site'));
+      item.append(preview, controls);
+      list.append(item);
+      return;
+    }
     const moveLeft = context.root.createElement('button');
     moveLeft.type = 'button';
     moveLeft.className = 'button button-secondary';

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   fillPropertyForm,
   readPropertyForm,
+  renderPropertyList,
 } from '../admin.js';
 
 function createForm(values = {}) {
@@ -25,6 +26,36 @@ function createForm(values = {}) {
     field(name) {
       return fields.get(name);
     },
+  };
+}
+
+function createRenderRoot() {
+  const createElement = (tagName) => ({
+    tagName,
+    children: [],
+    dataset: {},
+    append(...children) {
+      this.children.push(...children);
+    },
+    setAttribute(name, value) {
+      this[name] = value;
+    },
+  });
+  const list = {
+    children: [],
+    replaceChildren() {
+      this.children = [];
+    },
+    append(...children) {
+      this.children.push(...children);
+    },
+  };
+  return {
+    list,
+    getElementById(id) {
+      return id === 'propertyList' ? list : null;
+    },
+    createElement,
   };
 }
 
@@ -67,6 +98,35 @@ test('reads the property form and reuses shared Brazilian price parsing', () => 
     proximidades: ['Escola', 'Mercado'],
     status: 'draft',
   });
+});
+
+test('shows the existing site photo in each admin property row', () => {
+  const previousWindow = globalThis.window;
+  globalThis.window = {
+    IMOVEIS_DATA: [{
+      id: '665313',
+      images: ['assets/imoveis/imovel-0/foto-0.jpg'],
+    }],
+  };
+  try {
+    const root = createRenderRoot();
+    renderPropertyList([{
+      id: 'remote-665313',
+      legacy_id: '665313',
+      title: 'Apartamento Rossi',
+      type: 'Apartamento',
+      price: 'R$ 200.000',
+      status: 'published',
+      images: [],
+    }], root);
+
+    const [row] = root.list.children;
+    const image = row.children.flatMap((child) => child.children).find((child) => child.tagName === 'img');
+    assert.equal(image.src, 'assets/imoveis/imovel-0/foto-0.jpg');
+    assert.equal(image.alt, 'Apartamento Rossi');
+  } finally {
+    globalThis.window = previousWindow;
+  }
 });
 
 test('fills required, optional legacy, and image-independent form fields', () => {
