@@ -5,6 +5,19 @@ function defaultFallback() {
   return globalThis.window?.IMOVEIS_DATA ?? globalThis.IMOVEIS_DATA ?? [];
 }
 
+function preserveStaticGalleries(properties, fallback) {
+  const fallbackById = new Map(
+    (fallback ?? []).map((property) => [String(property?.id ?? ''), property]),
+  );
+
+  return (properties ?? []).map((property) => {
+    if (Array.isArray(property?.images) && property.images.length > 0) return property;
+    const staticProperty = fallbackById.get(String(property?.id ?? ''));
+    if (!staticProperty?.images?.length) return property;
+    return { ...property, images: [...staticProperty.images] };
+  });
+}
+
 async function defaultPublicImageUrl(client, path) {
   const storage = client.storage?.from('property-images');
   if (!storage || typeof storage.createSignedUrl !== 'function') {
@@ -34,7 +47,8 @@ export function createPropertySource({ config, client, fallback, publicImageUrl 
     async loadPublicProperties() {
       if (!repository) return staticProperties;
       try {
-        return await repository.listPublished();
+        const remoteProperties = await repository.listPublished();
+        return preserveStaticGalleries(remoteProperties, staticProperties);
       } catch {
         return staticProperties;
       }

@@ -76,6 +76,41 @@ test('falls back to static properties when the public query rejects', async () =
   assert.deepEqual(await source.loadPublicProperties(), fallback);
 });
 
+test('keeps the static gallery while migrated remote properties have no images yet', async () => {
+  const fallback = [{
+    id: '665313',
+    title: 'Apartamento local',
+    images: ['assets/imoveis/imovel-0/foto-0.jpg'],
+  }];
+  const query = {
+    select() { return this; },
+    eq() { return this; },
+    order() {
+      return Promise.resolve({
+        data: [{
+          id: 'remote-665313',
+          legacy_id: '665313',
+          title: 'Apartamento remoto atualizado',
+          type: 'Apartamento',
+          price_cents: 20000000,
+          status: 'published',
+          property_images: [],
+        }],
+        error: null,
+      });
+    },
+  };
+  const source = createPropertySource({
+    config: { url: 'https://example.supabase.co', publishableKey: 'publishable-key' },
+    client: { from() { return query; } },
+    fallback,
+  });
+
+  const [property] = await source.loadPublicProperties();
+  assert.equal(property.title, 'Apartamento remoto atualizado');
+  assert.deepEqual(property.images, ['assets/imoveis/imovel-0/foto-0.jpg']);
+});
+
 test('repository maps published rows and storage paths to the public property shape', async () => {
   const query = {
     select() { return this; },
