@@ -188,8 +188,8 @@ body {
         var(--admin-paper);
 }
 
-.admin-shell { width: min(100% - 3rem, 92rem); padding-top: 1.75rem; }
-.admin-header { padding-bottom: 2rem; }
+.admin-shell { width: 100%; max-width: none; padding: 1.75rem 0 4rem; }
+.admin-header { padding-right: clamp(1.25rem, 4vw, 4rem); padding-bottom: 2rem; padding-left: clamp(1.25rem, 4vw, 4rem); }
 .admin-brand-mark { width: 2.35rem; height: 2.35rem; }
 .admin-header-note { padding: 0.5rem 0.8rem; border: 1px solid var(--admin-line); border-radius: 999px; background: rgba(255, 255, 255, 0.62); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; }
 
@@ -267,6 +267,8 @@ input:focus, textarea:focus, select:focus { background: #fff; border-color: var(
 .dashboard {
     width: 100%;
     margin-top: 1rem;
+    padding-right: clamp(1.25rem, 6vw, 5rem);
+    padding-left: clamp(1.25rem, 6vw, 5rem);
     border: 0;
     border-radius: 0;
     box-shadow: none;
