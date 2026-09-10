@@ -19,6 +19,12 @@ function preserveStaticGalleries(properties, fallback) {
 }
 
 async function defaultPublicImageUrl(client, path) {
+  try {
+    const parsed = new URL(String(path ?? ''));
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return parsed.href;
+  } catch {
+    // Storage paths are handled below.
+  }
   const storage = client.storage?.from('property-images');
   if (!storage || typeof storage.createSignedUrl !== 'function') {
     throw new Error('Creating property image URL failed: signed URL support unavailable');
