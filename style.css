@@ -1555,6 +1555,10 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     }
 
     .hero-content {
+        order: 1;
+    }
+
+    .hero-content {
         padding: 0;
         max-width: none;
     }
@@ -1582,9 +1586,10 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     }
 
     .hero-image-col {
+        order: 2;
         width: 100%;
-        height: min(76vw, 360px);
-        min-height: 255px;
+        height: min(58vw, 275px);
+        min-height: 210px;
         border-radius: 22px;
         aspect-ratio: auto;
         box-shadow: 0 16px 35px rgba(0, 0, 0, .12);
@@ -1649,8 +1654,23 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     }
 
     .properties-grid {
-        grid-template-columns: 1fr;
-        gap: 1.2rem;
+        display: flex;
+        grid-template-columns: none;
+        gap: .9rem;
+        overflow-x: auto;
+        overflow-y: hidden;
+        margin-right: -1rem;
+        padding: .2rem 1rem .9rem .1rem;
+        scroll-snap-type: x mandatory;
+        scroll-padding-left: .1rem;
+        overscroll-behavior-inline: contain;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary) transparent;
+    }
+
+    .property-card {
+        flex: 0 0 min(86vw, 350px);
+        scroll-snap-align: start;
     }
 
     .card-img-slider {
