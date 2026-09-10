@@ -1832,6 +1832,11 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
 
 /* Keep the complete portrait visible on narrow screens. */
 @media (max-width: 768px) {
+    /* Touch devices have no reliable hover state: keep card gallery arrows visible. */
+    .card-nav {
+        opacity: 1;
+    }
+
     .hero-image-col {
         height: auto;
         min-height: 0;
