@@ -226,6 +226,31 @@ test('uses signed URLs for private property images', async () => {
   assert.equal(property.images[0], 'signed:properties/p-private/home.jpg:3600');
 });
 
+test('keeps legacy public image URLs and removes only their metadata', async () => {
+  const calls = [];
+  const client = {
+    from(table) {
+      calls.push(table);
+      return {
+        delete() { return this; },
+        eq() { return Promise.resolve({ error: null }); },
+      };
+    },
+    storage: {
+      from() {
+        throw new Error('legacy public images must not use Storage cleanup');
+      },
+    },
+  };
+  const repository = createPropertyRepository({ client });
+  const external = 'https://cdn.jsdelivr.net/gh/Fecchio01/tamara-couto-website@main/assets/imoveis/imovel-0/foto-0.jpg';
+  assert.deepEqual(await repository.removeImage({
+    id: 'image-1',
+    storage_path: external,
+  }), undefined);
+  assert.deepEqual(calls, ['property_images']);
+});
+
 test('returns fallback without querying for malformed configuration', async () => {
   let queryCount = 0;
   const fallback = [{ id: 'malformed-config-fallback' }];
