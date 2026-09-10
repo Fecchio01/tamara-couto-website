@@ -1488,3 +1488,317 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     }
 }
 
+/* Mobile refinement: keep the experience spacious, readable and easy to tap. */
+@media (max-width: 768px) {
+    body {
+        min-width: 320px;
+    }
+
+    .navbar {
+        height: 72px;
+    }
+
+    .nav-container {
+        padding: 0 1rem;
+    }
+
+    .brand {
+        gap: .55rem;
+        min-width: 0;
+    }
+
+    .brand .brand-symbol {
+        width: 36px;
+    }
+
+    .brand-text {
+        font-size: .82rem;
+        letter-spacing: .08em;
+        white-space: nowrap;
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 72px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.25rem;
+        padding: .7rem 1rem .75rem;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        background: rgba(255, 255, 255, .96);
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, .04);
+        scrollbar-width: none;
+    }
+
+    .nav-links::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-links a:not(.btn-primary) {
+        flex: 0 0 auto;
+        font-size: .78rem;
+        white-space: nowrap;
+    }
+
+    .nav-links .icon-link {
+        display: none;
+    }
+
+    .hero.split {
+        min-height: 0;
+        padding: 132px 1.15rem 3rem;
+        gap: 1.8rem;
+    }
+
+    .hero-content {
+        padding: 0;
+        max-width: none;
+    }
+
+    .hero-content .kicker {
+        font-size: .72rem;
+        line-height: 1.4;
+        letter-spacing: .11em;
+    }
+
+    .hero-content h1 {
+        font-size: clamp(2.1rem, 10vw, 3rem);
+        line-height: 1.06;
+        margin-bottom: 1rem;
+    }
+
+    .hero-content .hero-desc {
+        font-size: .94rem;
+        line-height: 1.65;
+        margin-bottom: 1.15rem;
+    }
+
+    .hero-content .hero-trust {
+        margin-bottom: 1.4rem;
+    }
+
+    .hero-image-col {
+        width: 100%;
+        height: min(76vw, 360px);
+        min-height: 255px;
+        border-radius: 22px;
+        aspect-ratio: auto;
+        box-shadow: 0 16px 35px rgba(0, 0, 0, .12);
+    }
+
+    .hero-actions {
+        align-items: stretch;
+        flex-direction: column;
+        gap: .8rem;
+    }
+
+    .hero-actions .btn-primary,
+    .hero-property-link {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .properties-section {
+        padding: 4rem 1rem;
+    }
+
+    .section-header {
+        margin-bottom: 2rem;
+    }
+
+    .section-header h2 {
+        font-size: clamp(1.65rem, 8vw, 2.1rem);
+    }
+
+    .section-header p {
+        font-size: .92rem;
+    }
+
+    .filters-container {
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .search-bar input {
+        padding: .9rem 1rem;
+        font-size: 1rem;
+    }
+
+    .category-filters {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: .55rem;
+        padding: .15rem .1rem .5rem;
+        scrollbar-width: none;
+    }
+
+    .category-filters::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-btn {
+        flex: 0 0 auto;
+        padding: .62rem 1rem;
+        font-size: .82rem;
+    }
+
+    .properties-grid {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+    }
+
+    .card-img-slider {
+        height: clamp(205px, 58vw, 270px);
+    }
+
+    .card-body {
+        padding: 1.15rem;
+    }
+
+    .card-body h3 {
+        font-size: 1.1rem;
+    }
+
+    .about-section {
+        padding: 4rem 1.15rem;
+    }
+
+    .about-container {
+        gap: 1.75rem;
+    }
+
+    .about-text h2 {
+        font-size: clamp(1.75rem, 8vw, 2.3rem);
+        margin-bottom: 1.15rem;
+    }
+
+    .about-text p {
+        font-size: 1rem;
+        line-height: 1.7;
+        margin-bottom: 1.25rem;
+    }
+
+    .about-subsection {
+        margin-top: 2.25rem;
+        padding-top: 1.75rem;
+    }
+
+    .lead-capture-section {
+        padding: 4rem 1.15rem;
+    }
+
+    .lead-capture-container {
+        gap: 1.75rem;
+    }
+
+    .lead-capture-text h2 {
+        font-size: clamp(1.8rem, 8vw, 2.3rem);
+    }
+
+    .modal-content {
+        width: calc(100% - 1rem);
+        height: calc(100dvh - 1rem);
+        max-height: none;
+        border-radius: 18px;
+    }
+
+    .modal-body {
+        grid-template-rows: minmax(220px, 36dvh) 1fr;
+    }
+
+    .modal-slider {
+        min-height: 220px;
+    }
+
+    .modal-details {
+        padding: 1.25rem 1rem 2rem;
+    }
+
+    .modal-details h2 {
+        padding-right: 2.5rem;
+        font-size: clamp(1.5rem, 7vw, 2rem);
+        line-height: 1.15;
+    }
+
+    .modal-location {
+        font-size: .78rem;
+        line-height: 1.4;
+        margin-bottom: 1rem;
+    }
+
+    .modal-price {
+        font-size: 1.7rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .modal-features-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: .7rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .feature-item {
+        font-size: .82rem;
+        line-height: 1.35;
+    }
+
+    .modal-details h3 {
+        font-size: 1.05rem;
+        margin-bottom: .7rem;
+    }
+
+    .modal-desc {
+        font-size: .92rem;
+        line-height: 1.65;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-map {
+        height: 180px !important;
+    }
+
+    .bank-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: .45rem;
+    }
+
+    .bank-btn {
+        min-height: 68px;
+        padding: .45rem .2rem;
+    }
+
+    .bank-name {
+        font-size: .58rem;
+    }
+
+    .close-modal {
+        top: .65rem;
+        right: .65rem;
+        width: 36px;
+        height: 36px;
+        font-size: 1.7rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .brand-text {
+        font-size: .74rem;
+    }
+
+    .hero.split {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .modal-features-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
