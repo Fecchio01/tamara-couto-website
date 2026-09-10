@@ -339,7 +339,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("bankInter").href = "https://inter.co/credito-pessoal-e-credito-imobiliario/";
         document.getElementById("bankCaixa").href = "https://www.caixa.gov.br/voce/habitacao/Paginas/default.aspx";
 
-        const mapQuery = `${currentImovel.neighborhood}, ${currentImovel.location}`;
+        const mapQuery = [currentImovel.neighborhood, currentImovel.location]
+            .filter(Boolean)
+            .join(', ');
         const mapContainer = document.getElementById("modalMapContainer");
         mapContainer.replaceChildren();
         const mapFrame = document.createElement('iframe');
@@ -347,7 +349,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         mapFrame.height = '100%';
         mapFrame.frameBorder = '0';
         mapFrame.style.border = '0';
-        mapFrame.src = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+        const savedMapUrl = safeHttpUrl(currentImovel.mapUrl, true);
+        mapFrame.src = savedMapUrl || `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
         mapFrame.allowFullscreen = true;
         mapContainer.append(mapFrame);
 

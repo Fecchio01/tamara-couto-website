@@ -57,20 +57,32 @@ function splitFormList(value) {
     .filter(Boolean);
 }
 
+export function buildMapUrl({ neighborhood, location } = {}) {
+  const query = [neighborhood, location]
+    .map((value) => String(value ?? '').trim())
+    .filter(Boolean)
+    .join(', ');
+  if (!query) return '';
+  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+}
+
 export function readPropertyForm(form = globalThis.document?.getElementById('propertyForm')) {
   const price = readField(form, 'price').trim();
+  const neighborhood = readField(form, 'neighborhood').trim();
+  const location = readField(form, 'location').trim();
+  const enteredMapUrl = readField(form, 'mapUrl', 'map_url').trim();
   return {
     title: readField(form, 'title').trim(),
     type: readField(form, 'type').trim(),
-    neighborhood: nullIfBlank(readField(form, 'neighborhood').trim()),
-    location: nullIfBlank(readField(form, 'location').trim()),
+    neighborhood: nullIfBlank(neighborhood),
+    location: nullIfBlank(location),
     price,
     price_cents: parsePriceToCents(price),
     description: readField(form, 'description'),
     features: splitFormList(readField(form, 'features')),
     latitude: nullIfBlank(readField(form, 'latitude').trim()),
     longitude: nullIfBlank(readField(form, 'longitude').trim()),
-    mapUrl: nullIfBlank(readField(form, 'mapUrl', 'map_url').trim()),
+    mapUrl: nullIfBlank(enteredMapUrl || buildMapUrl({ neighborhood, location })),
     legacy_id: nullIfBlank(readField(form, 'legacy_id').trim()),
     isNew: readChecked(form, 'isNew', 'is_new'),
     purpose: nullIfBlank(readField(form, 'purpose').trim()),
@@ -99,7 +111,7 @@ export function fillPropertyForm(form = globalThis.document?.getElementById('pro
   setFormField(form, ['features'], (property.features ?? []).join('\n'));
   setFormField(form, ['latitude'], property.latitude ?? '');
   setFormField(form, ['longitude'], property.longitude ?? '');
-  setFormField(form, ['mapUrl', 'map_url'], property.mapUrl ?? property.map_url ?? '');
+  setFormField(form, ['mapUrl', 'map_url'], property.mapUrl ?? property.map_url ?? buildMapUrl(property));
   setFormField(form, ['legacy_id'], property.legacy_id ?? '');
   setFormField(form, ['isNew', 'is_new'], property.isNew ?? property.is_new ?? false);
   setFormField(form, ['purpose'], property.purpose ?? '');
@@ -401,6 +413,15 @@ async function reorderPropertyImage(propertyId, images, index, offset) {
 function bindPropertyDashboard(context) {
   const { elements, root } = context;
   elements.propertyForm?.addEventListener('submit', handlePropertySubmit);
+  const updateMapField = () => {
+    const neighborhood = readField(elements.propertyForm, 'neighborhood').trim();
+    const location = readField(elements.propertyForm, 'location').trim();
+    const mapField = formField(elements.propertyForm, 'mapUrl') ?? formField(elements.propertyForm, 'map_url');
+    if (mapField) mapField.value = buildMapUrl({ neighborhood, location });
+  };
+  ['neighborhood', 'location'].forEach((name) => {
+    formField(elements.propertyForm, name)?.addEventListener('input', updateMapField);
+  });
   elements.newPropertyButton?.addEventListener('click', () => {
     context.activeProperty = null;
     elements.propertyEditorPanel?.setAttribute('open', '');
