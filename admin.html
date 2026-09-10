@@ -69,23 +69,29 @@
             <section class="property-workspace" aria-label="Gestão de imóveis">
                 <div class="property-toolbar">
                     <form id="propertyFilters" class="filters-form">
-                        <label for="propertySearch">Buscar por título</label>
-                        <input id="propertySearch" name="search" type="search" placeholder="Ex.: Casa do Lago">
-                        <label for="propertyCategory">Categoria</label>
-                        <select id="propertyCategory" name="category">
-                            <option value="">Todas</option>
-                            <option value="Casa">Casa</option>
-                            <option value="Apartamento">Apartamento</option>
-                            <option value="Cobertura">Cobertura</option>
-                            <option value="Terreno">Terreno</option>
-                        </select>
-                        <label for="propertyStatus">Status</label>
-                        <select id="propertyStatus" name="status">
-                            <option value="">Todos</option>
-                            <option value="draft">Rascunhos</option>
-                            <option value="published">Publicados</option>
-                            <option value="archived">Arquivados</option>
-                        </select>
+                        <div class="filter-field filter-search">
+                            <label for="propertySearch">Buscar por título</label>
+                            <input id="propertySearch" name="search" type="search" placeholder="Ex.: Casa do Lago">
+                        </div>
+                        <div class="filter-field">
+                            <label for="propertyCategory">Categoria</label>
+                            <select id="propertyCategory" name="category">
+                                <option value="">Todas</option>
+                                <option value="Casa">Casa</option>
+                                <option value="Apartamento">Apartamento</option>
+                                <option value="Cobertura">Cobertura</option>
+                                <option value="Terreno">Terreno</option>
+                            </select>
+                        </div>
+                        <div class="filter-field">
+                            <label for="propertyStatus">Status</label>
+                            <select id="propertyStatus" name="status">
+                                <option value="">Todos</option>
+                                <option value="draft">Rascunhos</option>
+                                <option value="published">Publicados</option>
+                                <option value="archived">Arquivados</option>
+                            </select>
+                        </div>
                         <button class="button button-secondary" type="submit">Filtrar</button>
                     </form>
                     <button class="button button-primary" type="button" id="newPropertyButton">Novo imóvel</button>

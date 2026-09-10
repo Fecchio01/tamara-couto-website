@@ -188,7 +188,7 @@ body {
         var(--admin-paper);
 }
 
-.admin-shell { padding-top: 1.75rem; }
+.admin-shell { width: min(100% - 3rem, 92rem); padding-top: 1.75rem; }
 .admin-header { padding-bottom: 2rem; }
 .admin-brand-mark { width: 2.35rem; height: 2.35rem; }
 .admin-header-note { padding: 0.5rem 0.8rem; border: 1px solid var(--admin-line); border-radius: 999px; background: rgba(255, 255, 255, 0.62); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -264,9 +264,20 @@ input:focus, textarea:focus, select:focus { background: #fff; border-color: var(
 .button-primary { box-shadow: 0 0.6rem 1.2rem rgba(36, 157, 168, 0.18); }
 .button-secondary { background: rgba(255, 255, 255, 0.58); }
 
+.dashboard {
+    width: 100%;
+    margin-top: 1rem;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
 .dashboard-heading { padding-bottom: 1.5rem; border-bottom-color: rgba(32, 54, 56, 0.08); }
 .property-workspace { margin-top: 1.5rem; }
 .property-toolbar { padding: 1rem; border: 1px solid rgba(32, 54, 56, 0.07); border-radius: 1.25rem; background: rgba(249, 253, 252, 0.82); }
+.filters-form { grid-template-columns: minmax(16rem, 1.8fr) minmax(10rem, 1fr) minmax(10rem, 1fr) auto; gap: 0.8rem; }
+.filter-field { min-width: 0; }
+.filter-field label { display: block; margin: 0 0 0.45rem; }
+.filters-form input, .filters-form select { margin: 0; padding: 0.75rem 0.85rem; }
 .property-list { gap: 1.15rem; }
 .property-row { padding: 0.85rem; border: 1px solid rgba(32, 54, 56, 0.08); border-radius: 1.15rem; box-shadow: 0 0.8rem 2rem rgba(32, 54, 56, 0.045); transition: transform 160ms ease, box-shadow 160ms ease; }
 .property-row:hover { transform: translateY(-2px); box-shadow: 0 1rem 2.2rem rgba(32, 54, 56, 0.09); }
