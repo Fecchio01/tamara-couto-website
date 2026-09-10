@@ -1588,11 +1588,19 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     .hero-image-col {
         order: 2;
         width: 100%;
-        height: min(58vw, 275px);
-        min-height: 210px;
+        height: auto;
+        min-height: 0;
         border-radius: 22px;
         aspect-ratio: auto;
         box-shadow: 0 16px 35px rgba(0, 0, 0, .12);
+    }
+
+    .hero-image-col img {
+        display: block;
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        object-position: center top;
     }
 
     .hero-actions {
@@ -1822,3 +1830,17 @@ h1, h2, h3, .kicker, .brand-text, blockquote {
     }
 }
 
+/* Keep the complete portrait visible on narrow screens. */
+@media (max-width: 768px) {
+    .hero-image-col {
+        height: auto;
+        min-height: 0;
+    }
+
+    .hero-image-col img {
+        display: block;
+        height: auto;
+        object-fit: contain;
+        object-position: center top;
+    }
+}
