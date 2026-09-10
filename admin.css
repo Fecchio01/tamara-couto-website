@@ -167,6 +167,75 @@ small { color: var(--admin-muted); font-size: 0.72rem; }
 .image-controls-static { color: var(--admin-muted); font-size: 0.68rem; }
 .image-controls .button { padding: 0.45rem 0.55rem; font-size: 0.7rem; }
 
+/* Visual refinement: the admin should feel like the public Tamara Couto site. */
+:root {
+    --admin-ink: #203638;
+    --admin-muted: #6b7d7f;
+    --admin-line: rgba(32, 54, 56, 0.1);
+    --admin-paper: #f4f9f8;
+    --admin-card: #ffffff;
+    --admin-primary: #55cdd0;
+    --admin-primary-dark: #249da8;
+    --admin-secondary: #31585b;
+    --admin-light: #e9f7f6;
+    --admin-danger: #b25750;
+}
+
+body {
+    background:
+        radial-gradient(circle at 8% 0%, rgba(85, 205, 208, 0.18), transparent 24rem),
+        radial-gradient(circle at 100% 20%, rgba(49, 88, 91, 0.08), transparent 30rem),
+        var(--admin-paper);
+}
+
+.admin-shell { padding-top: 1.75rem; }
+.admin-header { padding-bottom: 2rem; }
+.admin-brand-mark { width: 2.35rem; height: 2.35rem; }
+.admin-header-note { padding: 0.5rem 0.8rem; border: 1px solid var(--admin-line); border-radius: 999px; background: rgba(255, 255, 255, 0.62); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.state-card, .dashboard {
+    border: 1px solid rgba(32, 54, 56, 0.07);
+    border-radius: 1.75rem;
+    box-shadow: 0 1.5rem 4rem rgba(32, 54, 56, 0.1);
+}
+
+.login-card { overflow: hidden; }
+.login-intro { display: flex; flex-direction: column; justify-content: center; padding: 1.5rem; border-radius: 1.25rem; background: linear-gradient(145deg, #e9f8f7 0%, #f7fcfb 100%); }
+.login-intro p { max-width: 20rem; }
+
+input, textarea, select {
+    padding: 0.9rem 1rem;
+    border-color: rgba(32, 54, 56, 0.13);
+    border-radius: 0.8rem;
+    background: #fbfdfd;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+input:focus, textarea:focus, select:focus { background: #fff; border-color: var(--admin-primary-dark); box-shadow: 0 0 0 4px rgba(85, 205, 208, 0.18); }
+
+.button { border-radius: 999px; padding: 0.85rem 1.2rem; transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
+.button:hover:not(:disabled) { transform: translateY(-1px); }
+.button-primary { box-shadow: 0 0.6rem 1.2rem rgba(36, 157, 168, 0.18); }
+.button-secondary { background: rgba(255, 255, 255, 0.58); }
+
+.dashboard-heading { padding-bottom: 1.5rem; border-bottom-color: rgba(32, 54, 56, 0.08); }
+.property-workspace { margin-top: 1.5rem; }
+.property-toolbar { padding: 1rem; border: 1px solid rgba(32, 54, 56, 0.07); border-radius: 1.25rem; background: rgba(249, 253, 252, 0.82); }
+.property-list { gap: 1.15rem; }
+.property-row { padding: 0.85rem; border: 1px solid rgba(32, 54, 56, 0.08); border-radius: 1.15rem; box-shadow: 0 0.8rem 2rem rgba(32, 54, 56, 0.045); transition: transform 160ms ease, box-shadow 160ms ease; }
+.property-row:hover { transform: translateY(-2px); box-shadow: 0 1rem 2.2rem rgba(32, 54, 56, 0.09); }
+.property-row-media img, .property-row-media-placeholder { border-radius: 0.8rem; }
+.property-editor { padding-top: 0.5rem; border-top: 0; }
+.editor-summary { padding: 1.1rem 1.25rem; border: 1px solid rgba(32, 54, 56, 0.08); border-radius: 1.1rem; background: rgba(255, 255, 255, 0.75); }
+.property-editor[open] .editor-summary { border-radius: 1.1rem 1.1rem 0.4rem 0.4rem; }
+.property-editor[open] .editor-heading, .property-editor[open] #propertyForm { padding: 0 1.25rem; }
+.form-section-label { border-top-color: rgba(32, 54, 56, 0.08); }
+.image-item { border-radius: 0.9rem; }
+
+@media (max-width: 640px) {
+    .state-card, .dashboard { border-radius: 1.25rem; }
+    .property-toolbar { padding: 0.8rem; }
+}
+
 [hidden] { display: none !important; }
 
 @media (max-width: 640px) {
