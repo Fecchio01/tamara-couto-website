@@ -203,6 +203,53 @@ body {
 .login-intro { display: flex; flex-direction: column; justify-content: center; padding: 1.5rem; border-radius: 1.25rem; background: linear-gradient(145deg, #e9f8f7 0%, #f7fcfb 100%); }
 .login-intro p { max-width: 20rem; }
 
+/* Login: a quieter, more editorial entry point than the management dashboard. */
+.state-card.login-card {
+    position: relative;
+    display: block;
+    width: min(100%, 31rem);
+    padding: clamp(2rem, 6vw, 3.5rem);
+    overflow: hidden;
+}
+.state-card.login-card::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 0.3rem;
+    content: '';
+    background: linear-gradient(90deg, var(--admin-primary-dark), var(--admin-primary), #b9eeee);
+}
+.state-card.login-card::after {
+    position: absolute;
+    top: -5rem;
+    right: -4rem;
+    width: 12rem;
+    height: 12rem;
+    border: 1px solid rgba(85, 205, 208, 0.2);
+    border-radius: 50%;
+    content: '';
+    pointer-events: none;
+}
+.login-intro {
+    position: relative;
+    z-index: 1;
+    display: block;
+    max-width: 22rem;
+    margin: 0 auto 2.25rem;
+    padding: 0;
+    background: none;
+    text-align: center;
+}
+.login-intro .state-eyebrow { margin-bottom: 1rem; }
+.login-intro h1 { margin-bottom: 0.7rem; letter-spacing: -0.03em; }
+.login-intro p { max-width: none; margin-bottom: 0; font-size: 0.88rem; }
+.login-card form { position: relative; z-index: 1; max-width: 22rem; margin: 0 auto; }
+.login-card form label { margin-bottom: 0.5rem; color: var(--admin-secondary); }
+.login-card form input { margin-bottom: 1.15rem; }
+.login-card form .button-primary { width: 100%; margin-top: 0.4rem; padding: 0.95rem 1.2rem; }
+.login-card .form-message { text-align: center; }
+
 input, textarea, select {
     padding: 0.9rem 1rem;
     border-color: rgba(32, 54, 56, 0.13);
