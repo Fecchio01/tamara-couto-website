@@ -728,13 +728,9 @@ export async function initializeAdmin({ client, repository } = {}) {
   if (!root) return null;
 
   const config = readSupabaseConfig(globalThis.TAMARA_SUPABASE_CONFIG);
-  if (!hasSupabaseConfig(config)) {
-    renderAdminState({ kind: 'setup' }, root);
-    return null;
-  }
-
-  const resolvedClient = client ?? createSupabaseClient({ config });
-  if (!resolvedClient?.auth) {
+  const configured = hasSupabaseConfig(config);
+  const resolvedClient = client ?? (configured ? createSupabaseClient({ config }) : null);
+  if (configured && !resolvedClient?.auth) {
     renderAdminState({ kind: 'setup' }, root);
     return null;
   }
@@ -779,6 +775,8 @@ export async function initializeAdmin({ client, repository } = {}) {
           }
         } else if (error?.code === 'SIGNED_OUT') {
           showState({ kind: 'signed-out' });
+        } else if (error?.code === 'AUTH_UNAVAILABLE') {
+          showState({ kind: 'signed-out', message: SAFE_MESSAGES.AUTH_UNAVAILABLE });
         } else {
           showState({ kind: 'signed-out', message: SAFE_MESSAGES.SESSION_CHECK_FAILED });
         }
