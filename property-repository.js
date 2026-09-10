@@ -129,6 +129,12 @@ function randomId() {
 }
 
 async function signedStorageUrl(client, path) {
+  try {
+    const parsed = new URL(String(path ?? ''));
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return parsed.href;
+  } catch {
+    // Storage paths are handled below.
+  }
   const storage = client.storage?.from('property-images');
   if (!storage || typeof storage.createSignedUrl !== 'function') {
     throw new Error('Creating property image URL failed: signed URL support unavailable');
@@ -262,6 +268,16 @@ export function createPropertyRepository({ client, publicImageUrl } = {}) {
 
     const { error } = await client.from('property_images').delete().eq('id', image.id);
     if (error) throwOperationError('Deleting property image record', error);
+
+    // Legacy galleries can point to public repository assets instead of Supabase Storage.
+    // Removing the metadata is enough to remove them from the site; there is no Storage
+    // object to delete in that case.
+    try {
+      const parsed = new URL(String(storagePath));
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return;
+    } catch {
+      // Continue with normal Supabase Storage cleanup.
+    }
 
     const storage = client.storage?.from('property-images');
     if (!storage || typeof storage.remove !== 'function') {
