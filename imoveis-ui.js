@@ -305,7 +305,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             emailData.set('_subject', `Novo contato pelo site — ${imovelTitle}`);
             emailData.set('_replyto', email);
             emailData.set('_template', 'table');
-            const response = await fetch('https://formsubmit.co/ajax/joaovitormartinsfecchio@gmail.com', {
+            const response = await fetch('https://formsubmit.co/ajax/tamaracouto18@gmail.com', {
                 method: 'POST',
                 body: emailData,
                 headers: { Accept: 'application/json' },
