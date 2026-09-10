@@ -285,7 +285,8 @@ function renderPropertyImages(property) {
     remove.type = 'button';
     remove.className = 'button button-danger';
     remove.dataset.imageAction = 'delete';
-    remove.textContent = 'Excluir';
+    remove.textContent = 'Excluir foto';
+    remove.setAttribute('aria-label', `Excluir foto ${index + 1}`);
     controls.append(moveLeft, moveRight, remove);
     item.append(preview, controls);
     list.append(item);
@@ -507,6 +508,7 @@ function bindPropertyDashboard(context) {
     if (action === 'left') return reorderPropertyImage(context.activeProperty.id, images, index, -1);
     if (action === 'right') return reorderPropertyImage(context.activeProperty.id, images, index, 1);
     if (action === 'delete') {
+      if (typeof globalThis.confirm === 'function' && !globalThis.confirm(`Excluir a foto ${index + 1}? Essa ação não pode ser desfeita.`)) return;
       try {
         await context.repository.removeImage(images[index]);
         await refreshActiveProperty();
