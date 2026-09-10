@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     // Lead form submit
-    window.submitLeadForm = function(e, formId) {
+    window.submitLeadForm = async function(e, formId) {
         e.preventDefault();
         const form = document.getElementById(formId);
         const data = new FormData(form);
@@ -287,8 +287,40 @@ document.addEventListener("DOMContentLoaded", async () => {
             ? `Interesse no imóvel: ${IMOVEIS_DATA.find(i => i.id === window.currentModalImovelId)?.title || ''}. `
             : '';
         const text = encodeURIComponent(`Olá Tamara! ${imovelInfo}Meu nome é ${name}, telefone: ${phone}, email: ${email}. ${message}`);
+        const imovelTitle = window.currentModalImovelId
+            ? IMOVEIS_DATA.find(i => i.id === window.currentModalImovelId)?.title || 'imóvel'
+            : 'novas oportunidades';
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalLabel = submitButton?.textContent;
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Enviando...';
+        }
+
+        // WhatsApp continues to open immediately, while the same lead is also
+        // delivered by e-mail through the static-site form endpoint.
         window.open(`https://wa.me/5567999997768?text=${text}`, '_blank');
-        form.reset();
+        try {
+            const emailData = new FormData(form);
+            emailData.set('_subject', `Novo contato pelo site — ${imovelTitle}`);
+            emailData.set('_replyto', email);
+            emailData.set('_template', 'table');
+            const response = await fetch('https://formsubmit.co/ajax/tamaracouto18@gmail.com', {
+                method: 'POST',
+                body: emailData,
+                headers: { Accept: 'application/json' },
+            });
+            if (!response.ok) throw new Error('Lead e-mail submission failed');
+            form.reset();
+            window.alert('Dados enviados com sucesso. Em breve a Tamara entrará em contato.');
+        } catch {
+            window.alert('O WhatsApp foi aberto, mas não foi possível enviar o e-mail. Tente novamente em instantes.');
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = originalLabel;
+            }
+        }
     };
 
     // Modal Logic
