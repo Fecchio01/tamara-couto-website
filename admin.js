@@ -84,7 +84,6 @@ export function readPropertyForm(form = globalThis.document?.getElementById('pro
     longitude: nullIfBlank(readField(form, 'longitude').trim()),
     mapUrl: nullIfBlank(enteredMapUrl || buildMapUrl({ neighborhood, location })),
     legacy_id: nullIfBlank(readField(form, 'legacy_id').trim()),
-    isNew: readChecked(form, 'isNew', 'is_new'),
     purpose: nullIfBlank(readField(form, 'purpose').trim()),
     sourceUrl: nullIfBlank(readField(form, 'sourceUrl', 'source_url').trim()),
     proximidades: splitFormList(readField(form, 'proximidades')),
@@ -113,7 +112,6 @@ export function fillPropertyForm(form = globalThis.document?.getElementById('pro
   setFormField(form, ['longitude'], property.longitude ?? '');
   setFormField(form, ['mapUrl', 'map_url'], property.mapUrl ?? property.map_url ?? buildMapUrl(property));
   setFormField(form, ['legacy_id'], property.legacy_id ?? '');
-  setFormField(form, ['isNew', 'is_new'], property.isNew ?? property.is_new ?? false);
   setFormField(form, ['purpose'], property.purpose ?? '');
   setFormField(form, ['sourceUrl', 'source_url'], property.sourceUrl ?? property.source_url ?? '');
   setFormField(form, ['proximidades'], (property.proximidades ?? []).join('\n'));

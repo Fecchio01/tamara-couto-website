@@ -86,6 +86,9 @@ export function toLegacyProperty(property) {
     if (value !== undefined) legacyProperty[legacyField] = value;
   }
 
+  if (property.created_at !== undefined) legacyProperty.createdAt = property.created_at;
+  if (property.updated_at !== undefined) legacyProperty.updatedAt = property.updated_at;
+
   return legacyProperty;
 }
 

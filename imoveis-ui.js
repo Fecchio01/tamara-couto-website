@@ -70,7 +70,19 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const orderedData = [...dataToRender].sort((a, b) => Number(Boolean(b.isNew)) - Number(Boolean(a.isNew)));
+        const orderedData = [...dataToRender].sort((a, b) => {
+            const dateA = Date.parse(a.createdAt ?? a.created_at ?? '');
+            const dateB = Date.parse(b.createdAt ?? b.created_at ?? '');
+            const hasDateA = Number.isFinite(dateA);
+            const hasDateB = Number.isFinite(dateB);
+
+            if (hasDateA && hasDateB) return dateB - dateA;
+            if (hasDateA) return -1;
+            if (hasDateB) return 1;
+
+            // Compatibilidade com os imóveis antigos que ainda têm essa marcação.
+            return Number(Boolean(b.isNew)) - Number(Boolean(a.isNew));
+        });
 
         orderedData.forEach((imovel) => {
             const originalIndex = IMOVEIS_DATA.findIndex(i => i.id === imovel.id);

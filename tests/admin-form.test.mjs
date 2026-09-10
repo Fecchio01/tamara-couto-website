@@ -73,7 +73,6 @@ test('reads the property form and reuses shared Brazilian price parsing', () => 
     longitude: '-54.61',
     mapUrl: 'https://maps.example/casa',
     legacy_id: '665313',
-    isNew: { checked: true },
     purpose: 'Venda',
     sourceUrl: 'https://example.test/listing',
     proximidades: 'Escola\nMercado',
@@ -93,7 +92,6 @@ test('reads the property form and reuses shared Brazilian price parsing', () => 
     longitude: '-54.61',
     mapUrl: 'https://maps.example/casa',
     legacy_id: '665313',
-    isNew: true,
     purpose: 'Venda',
     sourceUrl: 'https://example.test/listing',
     proximidades: ['Escola', 'Mercado'],
@@ -151,7 +149,7 @@ test('keeps secondary property actions disabled until an existing property is se
 test('fills required, optional legacy, and image-independent form fields', () => {
   const form = createForm({
     title: '', type: '', neighborhood: '', location: '', price: '', description: '',
-    features: '', latitude: '', longitude: '', mapUrl: '', legacy_id: '', isNew: { checked: false },
+    features: '', latitude: '', longitude: '', mapUrl: '', legacy_id: '',
     purpose: '', sourceUrl: '', proximidades: '', status: 'draft',
   });
 
@@ -167,7 +165,6 @@ test('fills required, optional legacy, and image-independent form fields', () =>
     longitude: -54.60,
     map_url: 'https://maps.example/solar',
     legacy_id: 'legacy-2',
-    is_new: true,
     purpose: 'Aluguel',
     source_url: 'https://example.test/solar',
     proximidades: ['Parque', 'Hospital'],
@@ -181,7 +178,6 @@ test('fills required, optional legacy, and image-independent form fields', () =>
   assert.equal(form.field('latitude').value, '-20.44');
   assert.equal(form.field('mapUrl').value, 'https://maps.example/solar');
   assert.equal(form.field('legacy_id').value, 'legacy-2');
-  assert.equal(form.field('isNew').checked, true);
   assert.equal(form.field('purpose').value, 'Aluguel');
   assert.equal(form.field('proximidades').value, 'Parque\nHospital');
   assert.equal(form.field('status').value, 'published');
@@ -196,7 +192,7 @@ test('allows a draft with no price while published records still require title a
 test('reads blank optional fields as null without changing draft price behavior', () => {
   const form = createForm({
     title: 'Casa', type: 'Casa', neighborhood: '', location: '', price: '', description: '',
-    features: '', latitude: '', longitude: '', mapUrl: '', legacy_id: '', isNew: { checked: false },
+    features: '', latitude: '', longitude: '', mapUrl: '', legacy_id: '',
     purpose: '', sourceUrl: '', proximidades: '', status: 'draft',
   });
   const input = readPropertyForm(form);
