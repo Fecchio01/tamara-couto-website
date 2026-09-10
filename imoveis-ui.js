@@ -158,25 +158,55 @@ document.addEventListener("DOMContentLoaded", async () => {
     let currentCategory = "all";
     let currentSearch = "";
 
+    function matchesCategory(imovel, category) {
+        const type = String(imovel.type || '').toLowerCase();
+        const title = String(imovel.title || '').toLowerCase();
+        const categorySearch = String(category || '').toLowerCase();
+        if (category === "Apartamento") {
+            return (type.includes("apart") || title.includes("apart") || type.includes("apt") || title.includes("apt")) &&
+                !type.includes("cobertura") && !title.includes("cobertura");
+        }
+        if (category === "Cobertura") {
+            return type.includes("cobertura") || title.includes("cobertura");
+        }
+        return type.includes(categorySearch) || title.includes(categorySearch);
+    }
+
+    function bindCategoryButton(button) {
+        button.addEventListener("click", () => {
+            document.querySelectorAll(".filter-btn").forEach((item) => item.classList.remove("active"));
+            button.classList.add("active");
+            currentCategory = button.getAttribute("data-filter");
+            applyFilters();
+        });
+    }
+
+    function ensureCategoryFilters() {
+        const categoryFilters = document.getElementById("categoryFilters");
+        if (!categoryFilters) return;
+        const existingCategories = new Set(
+            [...categoryFilters.querySelectorAll(".filter-btn")].map((button) => button.dataset.filter),
+        );
+        const dynamicCategories = [...new Set(IMOVEIS_DATA.map((imovel) => String(imovel.type || '').trim()).filter(Boolean))]
+            .filter((type) => !["Casa", "Apartamento", "Cobertura", "Terreno"].some((category) =>
+                IMOVEIS_DATA.some((imovel) => matchesCategory(imovel, category) && String(imovel.type || '').trim() === type)));
+        dynamicCategories.forEach((type) => {
+            if (existingCategories.has(type)) return;
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "filter-btn filter-btn-dynamic";
+            button.dataset.filter = type;
+            button.textContent = type;
+            categoryFilters.append(button);
+            bindCategoryButton(button);
+        });
+    }
+
     function applyFilters() {
         let filtered = IMOVEIS_DATA;
         
         if (currentCategory !== "all") {
-            filtered = filtered.filter(i => {
-                const type = i.type || "";
-                const title = i.title || "";
-                if (currentCategory === "Apartamento") {
-                    return (type.toLowerCase().includes("apart") || title.toLowerCase().includes("apart") || 
-                            type.toLowerCase().includes("apt") || title.toLowerCase().includes("apt")) &&
-                           !type.toLowerCase().includes("cobertura") && !title.toLowerCase().includes("cobertura");
-                }
-                if (currentCategory === "Cobertura") {
-                    return type.toLowerCase().includes("cobertura") || title.toLowerCase().includes("cobertura");
-                }
-                const categorySearch = currentCategory.toLowerCase();
-                return type.toLowerCase().includes(categorySearch) || 
-                       title.toLowerCase().includes(categorySearch);
-            });
+            filtered = filtered.filter((imovel) => matchesCategory(imovel, currentCategory));
         }
         
         if (currentSearch.trim() !== "") {
@@ -206,15 +236,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Category Buttons
-    const filterBtns = document.querySelectorAll(".filter-btn");
-    filterBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-            filterBtns.forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            currentCategory = btn.getAttribute("data-filter");
-            applyFilters();
-        });
-    });
+    document.querySelectorAll(".filter-btn").forEach(bindCategoryButton);
+    ensureCategoryFilters();
 
     // Initial render keeps the static inventory visible while the optional remote request is pending.
     renderProperties(IMOVEIS_DATA);
@@ -382,6 +405,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             .then((remoteProperties) => {
                 if (Array.isArray(remoteProperties) && remoteProperties !== IMOVEIS_DATA) {
                     IMOVEIS_DATA.splice(0, IMOVEIS_DATA.length, ...remoteProperties);
+                    ensureCategoryFilters();
                     applyFilters();
                 }
             })
