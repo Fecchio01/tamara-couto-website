@@ -47,7 +47,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
     IMOVEIS_DATA.forEach((imovel) => {
         const count = officialGalleryCounts[imovel.id];
-        if (count) {
+        // Remote galleries from Supabase are authoritative. Only use the legacy
+        // official gallery when a fallback property has no images at all.
+        if (count && (!Array.isArray(imovel.images) || imovel.images.length === 0)) {
             imovel.images = Array.from({ length: count }, (_, index) =>
                 `assets/imoveis/oficiais/${imovel.id}-${index}.jpg`
             );
